@@ -1,0 +1,9 @@
+Changes.txt
+Makefile.PL
+MANIFEST
+RdKafka.xs
+RdKafka.pm
+README.txt
+t/000_use.t
+TODO.txt
+typemap
