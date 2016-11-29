@@ -13,7 +13,7 @@ extern "C" {
 
 MODULE = RdKafka    PACKAGE = RdKafka
 
-/* VERSION */
+### VERSION
 
 int
 rd_kafka_version()
@@ -22,7 +22,7 @@ const char *
 rd_kafka_version_str()
 
 
-/* CONSTANTS, ERRORS, TYPES */
+### CONSTANTS, ERRORS, TYPES
 
 const char *
 rd_kafka_get_debug_contexts()
@@ -76,16 +76,14 @@ rd_kafka_topic_partition_t *
 rd_kafka_topic_partition_list_find (rd_kafka_topic_partition_list_t *rktparlist, const char *topic, int32_t partition)
 
 
-/* MESSAGES */
+### MESSAGES
 
 void
 rd_kafka_message_destroy(rd_kafka_message_t *rkmessage)
 
-/*
-static RD_INLINE const char *
-RD_UNUSED 
-rd_kafka_message_errstr(const rd_kafka_message_t *rkmessage) {
-*/
+# static RD_INLINE const char *
+# RD_UNUSED 
+# rd_kafka_message_errstr(const rd_kafka_message_t *rkmessage) {
 static const char *
 rd_kafka_message_errstr(const rd_kafka_message_t *rkmessage)
 
@@ -93,7 +91,7 @@ int64_t
 rd_kafka_message_timestamp(const rd_kafka_message_t *rkmessage, rd_kafka_timestamp_type_t *tstype)
 
 
-/* CONFIGURATION */
+### CONFIGURATION
 
 rd_kafka_conf_t *
 rd_kafka_conf_new()
@@ -110,14 +108,12 @@ rd_kafka_conf_set(rd_kafka_conf_t *conf, const char *name, const char *value, ch
 void
 rd_kafka_conf_set_events(rd_kafka_conf_t *conf, int events)
 
-/*
- @deprecated See rd_kafka_conf_set_dr_msg_cb()
-void rd_kafka_conf_set_dr_cb(rd_kafka_conf_t *conf,
-			      void (*dr_cb) (rd_kafka_t *rk,
-					     void *payload, size_t len,
-					     rd_kafka_resp_err_t err,
-					     void *opaque, void *msg_opaque))
-*/
+# @deprecated See rd_kafka_conf_set_dr_msg_cb()
+# void rd_kafka_conf_set_dr_cb(rd_kafka_conf_t *conf,
+#			      void (*dr_cb) (rd_kafka_t *rk,
+#					     void *payload, size_t len,
+#					     rd_kafka_resp_err_t err,
+#					     void *opaque, void *msg_opaque))
 
 void
 rd_kafka_conf_set_dr_msg_cb(rd_kafka_conf_t *conf, void (*dr_msg_cb) (rd_kafka_t *rk, const rd_kafka_message_t *rkmessage, void *opaque))
@@ -171,7 +167,7 @@ rd_kafka_conf_get (const rd_kafka_conf_t *conf, const char *name, char *dest, si
 rd_kafka_conf_res_t
 rd_kafka_topic_conf_get (const rd_kafka_topic_conf_t *conf, const char *name, char *dest, size_t *dest_size)
 
-/* The dump must be freed with `rd_kafka_conf_dump_free()`. */
+# The dump must be freed with `rd_kafka_conf_dump_free()`.
 const char **
 rd_kafka_conf_dump(rd_kafka_conf_t *conf, size_t *cntp)
 const char **
@@ -184,7 +180,7 @@ void
 rd_kafka_conf_properties_show(FILE *fp)
 
 
-/* TOPIC CONFIGURATION */
+### TOPIC CONFIGURATION
 
 rd_kafka_topic_conf_t *
 rd_kafka_topic_conf_new()
@@ -208,7 +204,7 @@ int
 rd_kafka_topic_partition_available(const rd_kafka_topic_t *rkt, int32_t partition)
 
 
-/* PARTITIONERS */
+### PARTITIONERS
 
 int32_t
 rd_kafka_msg_partitioner_random(const rd_kafka_topic_t *rkt, const void *key, size_t keylen, int32_t partition_cnt, void *opaque, void *msg_opaque)
@@ -221,7 +217,7 @@ rd_kafka_msg_partitioner_consistent_random(const rd_kafka_topic_t *rkt, const vo
 
 
 
-/* MAIN HANDLES */
+### MAIN HANDLES
 
 
 rd_kafka_t *
@@ -266,12 +262,12 @@ rd_kafka_query_watermark_offsets(rd_kafka_t *rk, const char *topic, int32_t part
 rd_kafka_resp_err_t
 rd_kafka_get_watermark_offsets(rd_kafka_t *rk, const char *topic, int32_t partition, int64_t *low, int64_t *high)
 
-/* leave this out? */
+# leave this out?
 void
 rd_kafka_mem_free(rd_kafka_t *rk, void *ptr)
 
 
-/* QUEUE API */
+### QUEUE API
 
 rd_kafka_queue_t *
 rd_kafka_queue_new(rd_kafka_t *rk)
@@ -295,11 +291,10 @@ void
 rd_kafka_queue_io_event_enable(rd_kafka_queue_t *rkqu, int fd, const void *payload, size_t size)
 
 
-/* ************************************* *
- * simple legacy consumer API is omitted *
- * ************************************* */
+### (simple legacy consumer API is omitted)
 
-/* KAFKACONSUMER API */
+
+### KAFKACONSUMER API
 
 rd_kafka_resp_err_t
 rd_kafka_subscribe(rd_kafka_t *rk, const rd_kafka_topic_partition_list_t *topics)
@@ -338,7 +333,7 @@ rd_kafka_resp_err_t
 rd_kafka_position(rd_kafka_t *rk, rd_kafka_topic_partition_list_t *partitions)
 
 
-/* PRODUCER API */
+### PRODUCER API
 
 int
 rd_kafka_produce(rd_kafka_topic_t *rkt, int32_t partition, int msgflags, void *payload, size_t len, const void *key, size_t keylen, void *msg_opaque)
@@ -350,7 +345,7 @@ rd_kafka_resp_err_t
 rd_kafka_flush(rd_kafka_t *rk, int timeout_ms)
 
 
-/* METADATA API */
+### METADATA API
 
 rd_kafka_resp_err_t
 rd_kafka_metadata(rd_kafka_t *rk, int all_topics, rd_kafka_topic_t *only_rkt, const struct rd_kafka_metadata **metadatap, int timeout_ms)
@@ -359,7 +354,7 @@ void
 rd_kafka_metadata_destroy(const struct rd_kafka_metadata *metadata)
 
 
-/* CLIENT GROUP INFORMATION */
+### CLIENT GROUP INFORMATION
 
 rd_kafka_resp_err_t
 rd_kafka_list_groups(rd_kafka_t *rk, const char *group, const struct rd_kafka_group_list **grplistp, int timeout_ms)
@@ -368,17 +363,15 @@ void
 rd_kafka_group_list_destroy(const struct rd_kafka_group_list *grplist)
 
 
-/* MISCELLANEOUS */
+### MISCELLANEOUS
 
 int
 rd_kafka_brokers_add(rd_kafka_t *rk, const char *brokerlist)
 
-/*
-RD_EXPORT RD_DEPRECATED
-void rd_kafka_set_logger(rd_kafka_t *rk,
-			  void (*func) (const rd_kafka_t *rk, int level,
-					const char *fac, const char *buf));
- */
+# RD_EXPORT RD_DEPRECATED
+# void rd_kafka_set_logger(rd_kafka_t *rk,
+#			  void (*func) (const rd_kafka_t *rk, int level,
+#					const char *fac, const char *buf));
 
 void
 rd_kafka_set_log_level(rd_kafka_t *rk, int level)
@@ -402,13 +395,13 @@ int
 rd_kafka_wait_destroyed(int timeout_ms)
 
 
-/* EXPERIMENTAL API */
+### EXPERIMENTAL API
 
 rd_kafka_resp_err_t
 rd_kafka_poll_set_consumer(rd_kafka_t *rk)
 
 
-/* EVENTS INTERFACE */
+### EVENTS INTERFACE
 
 rd_kafka_event_type_t
 rd_kafka_event_type(const rd_kafka_event_t *rkev)
