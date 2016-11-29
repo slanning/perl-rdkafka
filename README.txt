@@ -5,6 +5,10 @@ See https://github.com/edenhill/librdkafka for the C library.
 
 INSTALLATION
 
+You'll need to install the C library somehow, either yourself
+or by installing a "-devel" package.
+FWIW, on CentOS 6.8 I installed librdkafka-devel.x86_64 .
+
 To install this module, do the usual:
 
    perl Makefile.PL
