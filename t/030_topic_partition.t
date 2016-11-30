@@ -2,6 +2,12 @@
 use strict;
 use warnings;
 
+use RdKafka;
+
 use Test::More tests => 1;
 
-BEGIN { use_ok('RdKafka') }
+
+{
+
+
+}

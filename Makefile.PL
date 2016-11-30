@@ -6,6 +6,9 @@ my $pkg = 'RdKafka';
 
 my (@errors, @inc, @libs);
 
+# librdkafka-devel.x86_64
+# gcc.x86_64
+
 # I don't know how to do this library-finding stuff properly...
 
 # I'm not sure which version actually works,
@@ -23,6 +26,7 @@ else {
     push @inc,  pkg_config($pc_pkg, 'cflags');
     push @libs, pkg_config($pc_pkg, 'libs');
 }
+print "INC : @inc\nLIBS: @libs\n";
 
 WriteMakefile(
     NAME => $pkg,
@@ -37,6 +41,10 @@ WriteMakefile(
     },
     INC  => join(' ', @inc),
     LIBS => join(' ', @libs),
+
+    # why do I have to add this to suppress the `make` warning
+    # when it's already the default?
+    XSPROTOARG => '-noprototypes',
 );
 
 ###
