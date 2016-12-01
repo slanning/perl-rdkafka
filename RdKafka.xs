@@ -1,3 +1,6 @@
+/* make this a compile flag? */
+#define SCOTT 1
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -75,16 +78,18 @@ rd_kafka_errno()
 
 ### TOPIC PARTITION
 
-###### (testing start here, 030_topic_partition.t)
-
-void
-rd_kafka_topic_partition_destroy(rd_kafka_topic_partition_t *rktpar)
+## (note: rd_kafka_topic_partition_new is in rdkafka_partition.h and not marked as RD_EXPORT)
+## "This must not be called for elements in a topic partition list."
+## For now there is no wrapping, until I figure out if you can create "topic partitions" outside of a list.
+## void
+## rd_kafka_topic_partition_destroy(rd_kafka_topic_partition_t *rktpar)
 
 rd_kafka_topic_partition_list_t *
 rd_kafka_topic_partition_list_new(int size)
 
-void
-rd_kafka_topic_partition_list_destroy(rd_kafka_topic_partition_list_t *rkparlist)
+## This is omitted; the Perl DESTROY will call it, in rd_kafka_topic_partition_list_tPtr below
+## void
+## rd_kafka_topic_partition_list_destroy(rd_kafka_topic_partition_list_t *rkparlist)
 
 rd_kafka_topic_partition_t *
 rd_kafka_topic_partition_list_add(rd_kafka_topic_partition_list_t *rktparlist, const char *topic, int32_t partition)
@@ -102,12 +107,128 @@ rd_kafka_topic_partition_list_t *
 rd_kafka_topic_partition_list_copy(const rd_kafka_topic_partition_list_t *src)
 
 rd_kafka_resp_err_t
-rd_kafka_topic_partition_list_set_offset (rd_kafka_topic_partition_list_t *rktparlist, const char *topic, int32_t partition, int64_t offset)
+rd_kafka_topic_partition_list_set_offset(rd_kafka_topic_partition_list_t *rktparlist, const char *topic, int32_t partition, int64_t offset)
 
 rd_kafka_topic_partition_t *
-rd_kafka_topic_partition_list_find (rd_kafka_topic_partition_list_t *rktparlist, const char *topic, int32_t partition)
+rd_kafka_topic_partition_list_find(rd_kafka_topic_partition_list_t *rktparlist, const char *topic, int32_t partition)
 
 
+
+MODULE = RdKafka    PACKAGE = rd_kafka_topic_partition_tPtr    PREFIX = rd_kafka_
+
+#ifdef SCOTT
+
+void
+rd_kafka_DESTROY(rd_kafka_topic_partition_t * toppar)
+  CODE:
+    printf("DESTROY rd_kafka_topic_partition_tPtr\n");
+    /* I think this should not be done, (?)
+       since rd_kafka_topic_partition_destroy should not be called
+       on elements in a topic-partition list
+       rd_kafka_topic_partition_destroy(toppar);  */
+
+#endif
+
+## struct rd_kafka_topic_partition_t accessors: topic, partition, offset, metadata, metadata_size(?), opaque, err
+
+char *
+rd_kafka_topic(rd_kafka_topic_partition_t *toppar)
+  CODE:
+    RETVAL = toppar->topic;
+  OUTPUT:
+    RETVAL
+
+int32_t
+rd_kafka_partition(rd_kafka_topic_partition_t *toppar)
+  CODE:
+    RETVAL = toppar->partition;
+  OUTPUT:
+    RETVAL
+
+int64_t
+rd_kafka_offset(rd_kafka_topic_partition_t *toppar)
+  CODE:
+    RETVAL = toppar->offset;
+  OUTPUT:
+    RETVAL
+
+##        void        *metadata;          /**< Metadata */
+## ???
+## rd_kafka_metadata(rd_kafka_topic_partition_t *toppar)
+##   CODE:
+##     RETVAL = toppar->metadata;
+##   OUTPUT:
+##     RETVAL
+
+size_t
+rd_kafka_metadata_size(rd_kafka_topic_partition_t *toppar)
+  CODE:
+    RETVAL = toppar->metadata_size;
+  OUTPUT:
+    RETVAL
+
+##        void        *opaque;            /**< Application opaque */
+## ???
+## rd_kafka_opaque(rd_kafka_topic_partition_t *toppar)
+##   CODE:
+##     RETVAL = toppar->opaque;
+##   OUTPUT:
+##     RETVAL
+
+rd_kafka_resp_err_t
+rd_kafka_err(rd_kafka_topic_partition_t *toppar)
+  CODE:
+    RETVAL = toppar->err;
+  OUTPUT:
+    RETVAL
+
+
+MODULE = RdKafka    PACKAGE = rd_kafka_topic_partition_list_tPtr    PREFIX = rd_kafka_
+
+void
+rd_kafka_DESTROY(rd_kafka_topic_partition_list_t * list)
+  CODE:
+#ifdef SCOTT
+    printf("DESTROY rd_kafka_topic_partition_list_tPtr\n");
+#endif
+    rd_kafka_topic_partition_list_destroy(list);
+
+## struct rd_kafka_topic_partition_list_t accessors: cnt, size, elems
+
+int
+rd_kafka_cnt(rd_kafka_topic_partition_list_t *list)
+  CODE:
+    RETVAL = list->cnt;
+  OUTPUT:
+    RETVAL
+
+int
+rd_kafka_size(rd_kafka_topic_partition_list_t *list)
+  CODE:
+    RETVAL = list->size;
+  OUTPUT:
+    RETVAL
+
+## I changed this from rd_kafka_topic_partition_t * to aref
+AV *
+rd_kafka_elems(rd_kafka_topic_partition_list_t *list)
+  CODE:
+    rd_kafka_topic_partition_t *toppar;
+    int cnt;
+    RETVAL = (AV *) sv_2mortal((SV *)newAV());  // AV* have to be made mortal
+
+    toppar = list->elems;
+    cnt = list->cnt;
+
+    while (--cnt >= 0) {
+        SV *sv = newSV(0);
+        sv_setref_pv(sv, "rd_kafka_topic_partition_tPtr", toppar);
+        av_push(RETVAL, sv);
+
+        ++toppar;
+    }    
+  OUTPUT:
+    RETVAL
 
 
 ## why can there not be empty lines in BOOT now??
