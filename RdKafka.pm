@@ -107,6 +107,16 @@ our %EXPORT_TAGS = (
         RD_KAFKA_RESP_ERR_UNSUPPORTED_VERSION
         RD_KAFKA_RESP_ERR_END_ALL
           /,
+        # rd_kafka_type_t
+        qw/
+        RD_KAFKA_PRODUCER
+        RD_KAFKA_CONSUMER
+          /,
+        # rd_kafka_conf_res_type_t
+        qw/
+        RD_KAFKA_CONF_UNKNOWN
+        RD_KAFKA_CONF_INVALID
+          /,
     ],
 );
 $EXPORT_TAGS{'all'} = [

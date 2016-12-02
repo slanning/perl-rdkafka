@@ -133,6 +133,111 @@ int64_t
 rd_kafka_message_timestamp(const rd_kafka_message_t *rkmessage, OUT rd_kafka_timestamp_type_t tstype)
 
 
+### CONFIGURATION
+
+rd_kafka_conf_t *
+rd_kafka_conf_new()
+
+## This is omitted; the Perl DESTROY will call it, in rd_kafka_conf_tPtr below
+## void
+## rd_kafka_conf_destroy(rd_kafka_conf_t *conf)
+
+rd_kafka_conf_t *
+rd_kafka_conf_dup(rd_kafka_conf_t *conf)
+## rd_kafka_conf_dup(const rd_kafka_conf_t *conf)
+
+## TODO
+## errstr_size is what you specify for the buffer size of errstr,
+## so I wonder if this should be variable size (conf,name,value,...)
+## or maybe should just croak on error (with maybe a flag to only warn/croak)
+## rd_kafka_conf_res_t
+## rd_kafka_conf_set(rd_kafka_conf_t *conf, const char *name, const char *value, char *errstr, size_t errstr_size)
+
+
+### start testing here (050_conf.t)
+
+void
+rd_kafka_conf_set_events(rd_kafka_conf_t *conf, int events)
+
+## @deprecated See rd_kafka_conf_set_dr_msg_cb()
+## void rd_kafka_conf_set_dr_cb(rd_kafka_conf_t *conf,
+##			      void (*dr_cb) (rd_kafka_t *rk,
+##					     void *payload, size_t len,
+##					     rd_kafka_resp_err_t err,
+##					     void *opaque, void *msg_opaque))
+
+## callbacks - these will need special handling like
+## PerlOGRECallback.{c,h} , PerlOGRECallbackManager.{c.h}
+## void
+## rd_kafka_conf_set_dr_msg_cb(rd_kafka_conf_t *conf, void (*dr_msg_cb) (rd_kafka_t *rk, const rd_kafka_message_t *rkmessage, void *opaque))
+##
+## void
+## rd_kafka_conf_set_consume_cb(rd_kafka_conf_t *conf, void (*consume_cb) (rd_kafka_message_t *rkmessage, void *opaque))
+##
+## void
+## rd_kafka_conf_set_rebalance_cb(rd_kafka_conf_t *conf, void (*rebalance_cb) (rd_kafka_t *rk, rd_kafka_resp_err_t err, rd_kafka_topic_partition_list_t *partitions, void *opaque))
+##
+## void
+## rd_kafka_conf_set_offset_commit_cb(rd_kafka_conf_t *conf, void (*offset_commit_cb) (rd_kafka_t *rk, rd_kafka_resp_err_t err, rd_kafka_topic_partition_list_t *offsets, void *opaque))
+##
+## void
+## rd_kafka_conf_set_error_cb(rd_kafka_conf_t *conf, void (*error_cb) (rd_kafka_t *rk, int err, const char *reason, void *opaque))
+##
+## void
+## rd_kafka_conf_set_throttle_cb(rd_kafka_conf_t *conf, void (*throttle_cb) (rd_kafka_t *rk, const char *broker_name, int32_t broker_id, int throttle_time_ms, void *opaque))
+##
+## void
+## rd_kafka_conf_set_log_cb(rd_kafka_conf_t *conf, void (*log_cb) (const rd_kafka_t *rk, int level, const char *fac, const char *buf))
+##
+## void
+## rd_kafka_conf_set_stats_cb(rd_kafka_conf_t *conf, int (*stats_cb) (rd_kafka_t *rk, char *json, size_t json_len, void *opaque))
+##
+## void
+## rd_kafka_conf_set_socket_cb(rd_kafka_conf_t *conf, int (*socket_cb) (int domain, int type, int protocol, void *opaque))
+##
+## void
+## rd_kafka_conf_set_connect_cb(rd_kafka_conf_t *conf, int (*connect_cb) (int sockfd, const struct sockaddr *addr, int addrlen, const char *id, void *opaque))
+##
+## void
+## rd_kafka_conf_set_closesocket_cb(rd_kafka_conf_t *conf, int (*closesocket_cb) (int sockfd, void *opaque))
+##
+## #ifndef _MSC_VER
+## void rd_kafka_conf_set_open_cb(rd_kafka_conf_t *conf, int (*open_cb) (const char *pathname, int flags, mode_t mode, void *opaque))
+## #endif
+
+void
+rd_kafka_conf_set_opaque(rd_kafka_conf_t *conf, void *opaque)
+
+void *
+rd_kafka_opaque(const rd_kafka_t *rk)
+
+void
+rd_kafka_conf_set_default_topic_conf(rd_kafka_conf_t *conf, rd_kafka_topic_conf_t *tconf)
+
+## TODO: size_t * IN_OUT
+## rd_kafka_conf_res_t
+## rd_kafka_conf_get (const rd_kafka_conf_t *conf, const char *name, char *dest, size_t *dest_size)
+
+## TODO: size_t * IN_OUT
+## rd_kafka_conf_res_t
+## rd_kafka_topic_conf_get (const rd_kafka_topic_conf_t *conf, const char *name, char *dest, size_t *dest_size)
+
+## TODO: take care of automatically freeing the dump on DESTROY
+## The dump must be freed with `rd_kafka_conf_dump_free()`.
+## const char **
+## rd_kafka_conf_dump(rd_kafka_conf_t *conf, size_t *cntp)
+## const char **
+## rd_kafka_topic_conf_dump(rd_kafka_topic_conf_t *conf, size_t *cntp)
+## void
+## rd_kafka_conf_dump_free(const char **arr, size_t cnt)
+
+void
+rd_kafka_conf_properties_show(FILE *fp)
+
+
+
+### STRUCT CLASSES
+
 MODULE = RdKafka    PACKAGE = rd_kafka_topic_partition_tPtr    PREFIX = rd_kafka_
 
 #ifdef SCOTT
@@ -280,6 +385,19 @@ MODULE = RdKafka    PACKAGE = rd_kafka_message_tPtr    PREFIX = rd_kafka_
 ##                                 *   have this field set, otherwise 0. */
 
 
+MODULE = RdKafka    PACKAGE = rd_kafka_conf_tPtr    PREFIX = rd_kafka_
+
+## I think this is okay. (?)
+## There seem to be no places rd_kafka_conf_tPtr is returned
+## besides conf_new and conf_dup,
+## so I think the underlying C conf should be destroyed when Perl DESTROY happens.
+void
+rd_kafka_DESTROY(rd_kafka_conf_t * conf)
+  CODE:
+#ifdef SCOTT
+    printf("DESTROY rd_kafka_conf_tPtr\n");
+#endif
+    rd_kafka_conf_destroy(conf);
 
 
 ## why can there not be empty lines in BOOT now??
@@ -328,6 +446,16 @@ BOOT:
 #ifdef RD_KAFKA_EVENT_OFFSET_COMMIT
   newCONSTSUB(stash, "RD_KAFKA_EVENT_OFFSET_COMMIT", newSViv(RD_KAFKA_EVENT_OFFSET_COMMIT));
 #endif
+  /*
+    rd_kafka_type_t enum
+   */
+  newCONSTSUB(stash, "RD_KAFKA_PRODUCER", newSViv(RD_KAFKA_PRODUCER));
+  newCONSTSUB(stash, "RD_KAFKA_CONSUMER", newSViv(RD_KAFKA_CONSUMER));
+  /*
+    rd_kafka_conf_res_type_t
+   */
+  newCONSTSUB(stash, "RD_KAFKA_CONF_UNKNOWN", newSViv(RD_KAFKA_CONF_UNKNOWN));
+  newCONSTSUB(stash, "RD_KAFKA_CONF_INVALID", newSViv(RD_KAFKA_CONF_INVALID));
   /*
     rd_kafka_resp_err_t enum
    */

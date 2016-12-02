@@ -9,7 +9,6 @@ rd_kafka_timestamp_type_t T_ENUM
 rd_kafka_resp_err_t T_ENUM
 rd_kafka_conf_res_t T_ENUM
 
-## need a way to access elements of structs
 rd_kafka_err_desc T_PTROBJ
 
 rd_kafka_topic_partition_t T_PTROBJ
@@ -21,6 +20,14 @@ const rd_kafka_topic_partition_list_t * T_PTROBJ
 rd_kafka_message_t T_PTROBJ
 rd_kafka_message_t * T_PTROBJ
 const rd_kafka_message_t * T_PTROBJ
+
+rd_kafka_t * T_PTROBJ
+const rd_kafka_t * T_PTROBJ
+
+rd_kafka_conf_t * T_PTROBJ
+const rd_kafka_conf_t * T_PTROBJ
+
+rd_kafka_topic_conf_t * T_PTROBJ
 
 rd_kafka_metadata_broker_t T_PTROBJ
 rd_kafka_metadata_partition_t T_PTROBJ
