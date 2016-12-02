@@ -9,5 +9,6 @@ t/010_version.t
 t/020_constants.t
 t/021_exporter_class.t
 t/030_topic_partition.t
+t/040_message.t
 TODO.txt
 typemap

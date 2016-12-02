@@ -114,6 +114,24 @@ rd_kafka_topic_partition_t *
 rd_kafka_topic_partition_list_find(rd_kafka_topic_partition_list_t *rktparlist, const char *topic, int32_t partition)
 
 
+### MESSAGES
+
+void
+rd_kafka_message_destroy(rd_kafka_message_t *rkmessage)
+
+## TODO: maybe should do this in rd_kafka_message_tPtr
+## static RD_INLINE const char *
+## RD_UNUSED 
+## rd_kafka_message_errstr(const rd_kafka_message_t *rkmessage) {
+## Gives a compile error, maybe because of the "static"
+## static const char *
+## rd_kafka_message_errstr(const rd_kafka_message_t *rkmessage)
+
+## TODO: maybe should do this in rd_kafka_message_tPtr
+## (tstype is a pointer, meant as a 2nd return value)
+int64_t
+rd_kafka_message_timestamp(const rd_kafka_message_t *rkmessage, OUT rd_kafka_timestamp_type_t tstype)
+
 
 MODULE = RdKafka    PACKAGE = rd_kafka_topic_partition_tPtr    PREFIX = rd_kafka_
 
@@ -232,6 +250,36 @@ rd_kafka_elems(rd_kafka_topic_partition_list_t *list)
     }
   OUTPUT:
     RETVAL
+
+
+MODULE = RdKafka    PACKAGE = rd_kafka_message_tPtr    PREFIX = rd_kafka_
+
+## rd_kafka_resp_err_t err;   /**< Non-zero for error signaling. */
+## rd_kafka_topic_t *rkt;     /**< Topic */
+## int32_t partition;         /**< Partition */
+## void   *payload;           /**< Producer: original message payload.
+## 			    * Consumer: Depends on the value of \c err :
+## 			    * - \c err==0: Message payload.
+## 			    * - \c err!=0: Error string */
+## size_t  len;               /**< Depends on the value of \c err :
+## 			    * - \c err==0: Message payload length
+## 			    * - \c err!=0: Error string length */
+## void   *key;               /**< Depends on the value of \c err :
+## 			    * - \c err==0: Optional message key */
+## size_t  key_len;           /**< Depends on the value of \c err :
+## 			    * - \c err==0: Optional message key length*/
+## int64_t offset;            /**< Consume:
+##                                 * - Message offset (or offset for error
+## 			    *   if \c err!=0 if applicable).
+##                                 * - dr_msg_cb:
+##                                 *   Message offset assigned by broker.
+##                                 *   If \c produce.offset.report is set then
+##                                 *   each message will have this field set,
+##                                 *   otherwise only the last message in
+##                                 *   each produced internal batch will
+##                                 *   have this field set, otherwise 0. */
+
+
 
 
 ## why can there not be empty lines in BOOT now??
