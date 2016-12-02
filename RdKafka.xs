@@ -104,7 +104,8 @@ int
 rd_kafka_topic_partition_list_del_by_idx(rd_kafka_topic_partition_list_t *rktparlist, int idx)
 
 rd_kafka_topic_partition_list_t *
-rd_kafka_topic_partition_list_copy(const rd_kafka_topic_partition_list_t *src)
+rd_kafka_topic_partition_list_copy(rd_kafka_topic_partition_list_t *src)
+###rd_kafka_topic_partition_list_copy(const rd_kafka_topic_partition_list_t *src)
 
 rd_kafka_resp_err_t
 rd_kafka_topic_partition_list_set_offset(rd_kafka_topic_partition_list_t *rktparlist, const char *topic, int32_t partition, int64_t offset)
@@ -129,7 +130,7 @@ rd_kafka_DESTROY(rd_kafka_topic_partition_t * toppar)
 
 #endif
 
-## struct rd_kafka_topic_partition_t accessors: topic, partition, offset, metadata, metadata_size(?), opaque, err
+## struct rd_kafka_topic_partition_t accessors: topic, partition, offset, [metadata,] metadata_size(?), [opaque,] err
 
 char *
 rd_kafka_topic(rd_kafka_topic_partition_t *toppar)
@@ -152,6 +153,7 @@ rd_kafka_offset(rd_kafka_topic_partition_t *toppar)
   OUTPUT:
     RETVAL
 
+## TODO: deferred until implementing metadata API (I think)
 ##        void        *metadata;          /**< Metadata */
 ## ???
 ## rd_kafka_metadata(rd_kafka_topic_partition_t *toppar)
@@ -167,6 +169,7 @@ rd_kafka_metadata_size(rd_kafka_topic_partition_t *toppar)
   OUTPUT:
     RETVAL
 
+## TODO: figure out later what "opaque" is
 ##        void        *opaque;            /**< Application opaque */
 ## ???
 ## rd_kafka_opaque(rd_kafka_topic_partition_t *toppar)
@@ -226,7 +229,7 @@ rd_kafka_elems(rd_kafka_topic_partition_list_t *list)
         av_push(RETVAL, sv);
 
         ++toppar;
-    }    
+    }
   OUTPUT:
     RETVAL
 
