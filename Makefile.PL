@@ -36,7 +36,7 @@ WriteMakefile(
     MAN3PODS => {},
     META_MERGE => {
         no_index => {
-            directory => [ qw/t examples/ ],
+            directory => [ qw/t examples genscripts/ ],
         },
     },
     INC  => join(' ', @inc),
