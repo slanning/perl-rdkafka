@@ -17,7 +17,7 @@ exit;
 sub main {
     my $root = root_node();
     my @nodes = top_nodes_from_header_file($root);
-    process_nodes(\@nodes);
+    process_top_nodes(\@nodes);
 }
 
 sub root_node {
@@ -56,83 +56,100 @@ sub child_element_nodes {
     return(@nodes);
 }
 
-sub process_nodes {
+sub process_top_nodes {
     my ($nodes) = @_;
 
-    my %nodes_by_name;
+    # Pass through all the top-level nodes to gather data,
+    # since they can refer to other top-level nodes, even those later in the file.
+    # { Function => { "_308" => { name => "rd_kafka_version", ... }, ... }, ... }
+    my $nodes_by_name = get_node_data($nodes);
+    #print Dumper($nodes_by_name);
+
+    # Now tie the data together.
+
+
+}
+
+sub get_node_data {
+    my ($nodes) = @_;
+
     foreach my $node (@$nodes) {
         my $node_name = $node->nodeName;
         my $cb = 'cb_' . $node_name;
         if (defined(&$cb)) {
-            my ($name, $data) = do {
+            my ($id, $data) = do {
                 no strict 'refs';
                 $cb->($node);
             };
+            next unless $id;
 
-            $nodes_by_name{$node_name}{$name} = $data
-              if $name;
+            $nodes_by_name{$node_name}{$id} = $data;
         }
         else {
             print "UNHANDLED callback '$node_name'\n";
         }
     }
 
-    print Dumper(\%nodes_by_name);
+    return(\%nodes_by_name);
 }
 
 sub cb_Enumeration {
     my ($node) = @_;
-    my $name = $node->getAttribute('name');
+    my $id = $node->getAttribute('id');
 
-    my @enum_value = map($_->getAttribute('name'), child_element_nodes($node));
+    my %attr = map +($_ => $node->getAttribute($_)), qw/name type/;
 
-    return($name => \@enum_value);
+    my @enum_value = map($_->getAttribute('name'), child_element_nodes($node));   # <EnumValue>
+    $attr{enum_values} = \@enum_value;
+
+    return($id => \%attr);
 }
 
 # might need to be by id instead of name (maybe should redo them all by id)
 sub cb_Field {
     my ($node) = @_;
-    my $name = $node->getAttribute('name');
+    my $id = $node->getAttribute('id');
 
-    my %attr = map +($_ => $node->getAttribute($_)), qw/id type/;
+    my %attr = map +($_ => $node->getAttribute($_)), qw/name type/;
 
-    return($name => \%attr);
+    return($id => \%attr);
 }
 
 sub cb_Function {
     my ($node) = @_;
+    my $id = $node->getAttribute('id');
 
-    my $name = $node->getAttribute('name');
-    my %attr = map +($_ => $node->getAttribute($_)), qw/id type returns/;
+    my %attr = map +($_ => $node->getAttribute($_)), qw/name returns type/;
 
     my @arg;
-    foreach my $arg_node (child_element_nodes($node)) {
+    foreach my $arg_node (child_element_nodes($node)) {    # <Argument>
         push @arg, { map( +($_ => $arg_node->getAttribute($_) ), qw/name type/) };
     }
     $attr{arguments} = \@arg;
 
-    return($name => \%attr);
+    return($id => \%attr);
 }
 
 sub cb_Struct {
     my ($node) = @_;
-    my $name = $node->getAttribute('name');
+    my $id = $node->getAttribute('id');
 
-    # some structs are defined in other header files...
-    # and typedefs
+    # Struct elements will probably be generally gnarly.
+    # Some structs are defined in other header files,
+    # when <Struct ... incomplete="1"> and name ends with "_s".
+    # Those also have a corresponding <Typedef> whose name ends with "_t".
+    # I guess I'll just do those manually.
 
-    my %attr = map +($_ => $node->getAttribute($_)), qw/id name members/;
+    my %attr = map +($_ => $node->getAttribute($_)), qw/incomplete members name/;
 
-    # struct elements will probably be generally gnarly
-
-    return($name => \%attr);
+    return($id => \%attr);
 }
 
 sub cb_Typedef {
     my ($node) = @_;
-    my $name = $node->getAttribute('name');
+    my $id = $node->getAttribute('id');
 
-    my %attr = map +($_ => $node->getAttribute($_)), qw/id name type/;
+    my %attr = map +($_ => $node->getAttribute($_)), qw/name type/;
 
-    return;
+    return($id => \%attr);
 }
