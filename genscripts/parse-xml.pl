@@ -103,7 +103,26 @@ sub link_data_together {
     my ($nodes_by_name, $nodes_by_id) = @_;
 
     link_structs($nodes_by_name, $nodes_by_id);   # deletes Field
-    print Dumper($nodes_by_name->{Struct});exit;
+    link_enums($nodes_by_name, $nodes_by_id);
+    link_functions($nodes_by_name, $nodes_by_id);
+
+    print Dumper($nodes_by_name->{Function});exit;
+
+
+}
+
+sub link_functions {
+    my ($nodes_by_name, $nodes_by_id) = @_;
+
+    my $functions = $nodes_by_name->{Function};
+
+    # arguments
+
+    # returns
+}
+
+sub link_enums {
+    #my ($nodes_by_name, $nodes_by_id) = @_;
 }
 
 sub link_structs {
@@ -113,35 +132,71 @@ sub link_structs {
     my $fields = delete($nodes_by_name->{Field});    # bye!
     my $structs = $nodes_by_name->{Struct};
     my $typedefs = $nodes_by_name->{Typedef};
-    my %cached_typedef_by_type;
     foreach my $struct_id (keys %$structs) {
         my $struct = $structs->{$struct_id};
-        if ($struct->{incomplete}) {
-            my $typedef = $cached_typedef_by_type{$struct_id};
-            unless ($typedef) {
-                foreach my $typedef_id (keys %$typedefs) {
-                    my $t = $typedefs->{$typedef_id};
-                    if ($t->{type} eq $struct_id) {
-                        $typedef = $cached_typedef_by_type{$struct_id} = $t;
-                    }
-                }
+
+        # look up Typedef
+        # (hm, we could just use the non-typedef one...)
+        my $typedef;
+        foreach my $typedef_id (keys %$typedefs) {
+            my $t = $typedefs->{$typedef_id};
+            if ($t->{type} eq $struct_id) {
+                $typedef = $t;
             }
+        }
+        die qq{Typedef not found for struct '$struct_id'}
+          if $struct->{name} =~ /_s$/ and not $typedef;
+        if ($typedef) {
             $struct->{typedef} = {
                 id => $typedef->{id},
                 name => $typedef->{name},
             };
         }
 
-        my @member_ids = split(' ', $struct->{members});
+        # the members of the struct
+        my @member_ids = split(' ', ($struct->{members} // ''));
         foreach my $member_id (@member_ids) {
             my $field = $fields->{$member_id}
               or die("Struct '$struct_id' member '$member_id' not found");
 
+            # look up type of type of type of... until we find the ultimate type
+            my ($nn, $type);
+            my ($const_type, $struct_type, $pointer_type) = ('', '', '');
+            my $max_depth = 10;
+            my $type_id = $field->{type};
+            do {
+                $type = $nodes_by_id->{$type_id};
+                $nn = $type->nodeName;
+                $type_id = $type->getAttribute('type');
+
+                # along the way, these might be added
+                $const_type = 'const '    if $nn eq 'CvQualifiedType' and $type->hasAttribute('const');
+                $struct_type = 'struct '  if $nn eq 'Struct';
+                $pointer_type = ' *'      if $nn eq 'PointerType';
+            } while ($nn =~ /^(?:PointerType|CvQualifiedType)/
+                     and --$max_depth > 0);
+            if ($max_depth <= 0) {
+                die "max depth reached, couldn't find type leaf node for struct '$struct_id' member '$member_id'"
+                  . " <$nn id='" . $type->getAttribute('id') . "'>";
+            }
+            die "type unknown for struct '$struct_id' member '$member_id' "
+              unless $type;
+
+            my $type_name = $type->getAttribute('name');
+            my $type_node_id   = $type->getAttribute('id');
             push @{ $struct->{fields} }, {
                 name => $field->{name},
+                type => {
+                    id            => $type_node_id,
+                    member_id     => $member_id,
+                    name          => $type_name,
+                    node_name     => $type->nodeName,
 
-                # _type lookup
-
+                    const         => $const_type,
+                    struct        => $struct_type,
+                    pointer       => $pointer_type,
+                    full_name     => $const_type . $struct_type . $type_name . $pointer_type,
+                },
             };
         }
     }
@@ -175,7 +230,7 @@ sub cb_Enumeration {
     my ($node) = @_;
     my $id = $node->getAttribute('id');
 
-    my %attr = map +($_ => $node->getAttribute($_)), qw/name type/;
+    my %attr = map +($_ => $node->getAttribute($_)), qw/name/;
 
     my @enum_value = map($_->getAttribute('name'), child_element_nodes($node));   # <EnumValue>
     $attr{enum_values} = \@enum_value;
@@ -197,7 +252,7 @@ sub cb_Function {
     my ($node) = @_;
     my $id = $node->getAttribute('id');
 
-    my %attr = map +($_ => $node->getAttribute($_)), qw/name returns type/;
+    my %attr = map +($_ => $node->getAttribute($_)), qw/name returns/;
 
     my @arg;
     foreach my $arg_node (child_element_nodes($node)) {    # <Argument>
