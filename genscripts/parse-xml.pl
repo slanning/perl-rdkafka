@@ -103,10 +103,11 @@ sub link_data_together {
     my ($nodes_by_name, $nodes_by_id) = @_;
 
     link_structs($nodes_by_name, $nodes_by_id);   # deletes Field
+    #print "STRUCT:\n" . Dumper($nodes_by_name->{Struct});exit;
     link_enums($nodes_by_name, $nodes_by_id);
+    #print "ENUM:\n" . Dumper($nodes_by_name->{Enumeration});exit;
     link_functions($nodes_by_name, $nodes_by_id);
-
-    print Dumper($nodes_by_name->{Function});exit;
+    print "FUNCTION:\n" . Dumper($nodes_by_name->{Function});exit;
 
 
 }
@@ -115,10 +116,38 @@ sub link_functions {
     my ($nodes_by_name, $nodes_by_id) = @_;
 
     my $functions = $nodes_by_name->{Function};
+    foreach my $function_id (keys %$functions) {
+        my $function = $functions->{$function_id};
 
-    # arguments
+        # arguments
+        my $args = $function->{arguments};
+        foreach my $arg (@$args) {
+            my $type_id   = $arg->{type};
+            my $type_data = lookup_type($type_id, $nodes_by_id);
+            $arg->{type_id} = $type_id;
+            $arg->{type}    = $type_data;
 
-    # returns
+            # CastXML doesn't have names for function-pointer args
+            my $arg_name = "arg0";
+            if ($type_data->{node_name} eq 'FunctionType') {
+                $arg->{full_name} = sprintf(
+                    "%s (*%s) (%s)",
+                    $type_data->{returns}{type}{full_name},
+                    $arg->{name},
+                    (join(', ', map($_->{type}{full_name} . " " . $arg_name++,
+                                    @{ $type_data->{arguments} })) || ''),
+                );
+            }
+        }
+
+        # returns
+        my $type_id = $function->{returns};
+        my $type_data = lookup_type($type_id, $nodes_by_id);
+        $function->{returns} = {
+            type_id => $type_id,
+            type    => $type_data,
+        };
+    }
 }
 
 sub link_enums {
@@ -148,7 +177,7 @@ sub link_structs {
           if $struct->{name} =~ /_s$/ and not $typedef;
         if ($typedef) {
             $struct->{typedef} = {
-                id => $typedef->{id},
+                id   => $typedef->{id},
                 name => $typedef->{name},
             };
         }
@@ -159,47 +188,83 @@ sub link_structs {
             my $field = $fields->{$member_id}
               or die("Struct '$struct_id' member '$member_id' not found");
 
-            # look up type of type of type of... until we find the ultimate type
-            my ($nn, $type);
-            my ($const_type, $struct_type, $pointer_type) = ('', '', '');
-            my $max_depth = 10;
-            my $type_id = $field->{type};
-            do {
-                $type = $nodes_by_id->{$type_id};
-                $nn = $type->nodeName;
-                $type_id = $type->getAttribute('type');
+            my $type_data = lookup_type($field->{type}, $nodes_by_id);
 
-                # along the way, these might be added
-                $const_type = 'const '    if $nn eq 'CvQualifiedType' and $type->hasAttribute('const');
-                $struct_type = 'struct '  if $nn eq 'Struct';
-                $pointer_type = ' *'      if $nn eq 'PointerType';
-            } while ($nn =~ /^(?:PointerType|CvQualifiedType)/
-                     and --$max_depth > 0);
-            if ($max_depth <= 0) {
-                die "max depth reached, couldn't find type leaf node for struct '$struct_id' member '$member_id'"
-                  . " <$nn id='" . $type->getAttribute('id') . "'>";
-            }
-            die "type unknown for struct '$struct_id' member '$member_id' "
-              unless $type;
-
-            my $type_name = $type->getAttribute('name');
-            my $type_node_id   = $type->getAttribute('id');
             push @{ $struct->{fields} }, {
-                name => $field->{name},
-                type => {
-                    id            => $type_node_id,
-                    member_id     => $member_id,
-                    name          => $type_name,
-                    node_name     => $type->nodeName,
-
-                    const         => $const_type,
-                    struct        => $struct_type,
-                    pointer       => $pointer_type,
-                    full_name     => $const_type . $struct_type . $type_name . $pointer_type,
-                },
+                name       => $field->{name},
+                member_id  => $member_id,
+                type       => $type_data,
             };
         }
     }
+}
+
+sub lookup_type {
+    my ($type_id, $nodes_by_id) = @_;
+
+    my ($nn, $type);
+    my ($const_type, $struct_type, $pointer_type, $array_type) = ('', '', '', '');
+    my $max_depth = 10;
+    do {
+        $type = $nodes_by_id->{$type_id};
+        $nn = $type->nodeName;
+        $type_id = $type->getAttribute('type');
+
+        # along the way, these might be added
+        $const_type   = 'const '    if $nn eq 'CvQualifiedType' and $type->hasAttribute('const');
+        $struct_type  = 'struct '   if $nn eq 'Struct';
+        $pointer_type = ' *'        if $nn eq 'PointerType';
+        $array_type   = 1           if $nn eq 'ArrayType';
+    } while ($nn =~ /^(?:PointerType|CvQualifiedType)/
+             and --$max_depth > 0);
+    if ($max_depth <= 0) {
+        die "max depth reached, couldn't find type leaf node for '$type_id'"
+          . " <$nn id='" . $type->getAttribute('id') . "'>";
+    }
+    die("type unknown for type id '$type_id'")
+      unless $type;
+
+
+    my $type_name = $type->getAttribute('name');
+    my %type_data = (
+        id => $type->getAttribute('id'),
+        node_name => $nn,
+    );
+
+    # function pointers..
+    if (!$type_name and $nn eq 'FunctionType') {
+        # arguments
+        my @args = child_element_nodes($type);
+        foreach my $arg (@args) {
+            my $type_id   = $arg->getAttribute('type');
+            my $type_data = lookup_type($type_id, $nodes_by_id);   # recursive
+            push @{ $type_data{arguments} }, {
+                type_id => $type_id,
+                type    => $type_data,
+            };
+        }
+
+        # returns
+        my $type_id = $type->getAttribute('returns');
+        my $type_data = lookup_type($type_id, $nodes_by_id);
+        $type_data{returns} = {
+            type_id => $type_id,
+            type    => $type_data,
+        };
+
+        # $type_data{full_name} is done up in link_functions
+    }
+    else {
+        $type_data{name}       =  $type_name;
+        $type_data{const}      = ($const_type   ? 1 : 0);
+        $type_data{struct}     = ($struct_type  ? 1 : 0);
+        $type_data{pointer}    = ($pointer_type ? 1 : 0);
+        $type_data{array}      = ($array_type   ? 1 : 0);
+
+        $type_data{full_name}  = $const_type . $struct_type . $type_name . $pointer_type;
+    }
+
+    return(\%type_data);
 }
 
 sub node_data {
