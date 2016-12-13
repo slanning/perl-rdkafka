@@ -28,6 +28,7 @@ rd_kafka_conf_t * T_PTROBJ
 const rd_kafka_conf_t * T_PTROBJ
 
 rd_kafka_topic_conf_t * T_PTROBJ
+const rd_kafka_topic_conf_t * T_PTROBJ
 
 rd_kafka_metadata_broker_t T_PTROBJ
 rd_kafka_metadata_partition_t T_PTROBJ

@@ -154,10 +154,11 @@ rd_kafka_conf_dup(rd_kafka_conf_t *conf)
 ## rd_kafka_conf_set(rd_kafka_conf_t *conf, const char *name, const char *value, char *errstr, size_t errstr_size)
 
 
-### start testing here (050_conf.t)
+### TODO this conf section  #####
 
-void
-rd_kafka_conf_set_events(rd_kafka_conf_t *conf, int events)
+### handle version
+## void
+## rd_kafka_conf_set_events(rd_kafka_conf_t *conf, int events)
 
 ## @deprecated See rd_kafka_conf_set_dr_msg_cb()
 ## void rd_kafka_conf_set_dr_cb(rd_kafka_conf_t *conf,
@@ -233,6 +234,30 @@ rd_kafka_conf_set_default_topic_conf(rd_kafka_conf_t *conf, rd_kafka_topic_conf_
 
 void
 rd_kafka_conf_properties_show(FILE *fp)
+
+################
+
+
+
+### TOPIC CONFIGURATION
+
+rd_kafka_topic_conf_t *
+rd_kafka_topic_conf_new()
+
+rd_kafka_topic_conf_t *
+rd_kafka_topic_conf_dup(rd_kafka_topic_conf_t *conf)
+
+## TODO
+## rd_kafka_conf_res_t
+## rd_kafka_topic_conf_set(rd_kafka_topic_conf_t *conf, const char *name, const char *value, char *errstr, size_t errstr_size)
+
+## void
+## rd_kafka_topic_conf_set_opaque(rd_kafka_topic_conf_t *conf, void *opaque)
+
+## TODO
+## void
+## rd_kafka_topic_conf_set_partitioner_cb (rd_kafka_topic_conf_t *topic_conf, int32_t (*partitioner) (const rd_kafka_topic_t *rkt, const void *keydata, size_t keylen, int32_t partition_cnt, void *rkt_opaque, void *msg_opaque))
+
 
 
 
@@ -398,6 +423,18 @@ rd_kafka_DESTROY(rd_kafka_conf_t * conf)
     printf("DESTROY rd_kafka_conf_tPtr\n");
 #endif
     rd_kafka_conf_destroy(conf);
+
+
+MODULE = RdKafka    PACKAGE = rd_kafka_topic_conf_tPtr    PREFIX = rd_kafka_
+
+void
+rd_kafka_DESTROY(rd_kafka_topic_conf_t *topic_conf)
+  CODE:
+#ifdef SCOTT
+    printf("DESTROY rd_kafka_topic_conf_tPtr\n");
+#endif
+    rd_kafka_topic_conf_destroy(topic_conf);
+
 
 
 ## why can there not be empty lines in BOOT now??
