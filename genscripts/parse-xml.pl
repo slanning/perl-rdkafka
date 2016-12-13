@@ -95,21 +95,25 @@ sub process_top_nodes {
     # { Function => { "_308" => { name => "rd_kafka_version", ... }, ... }, ... }
     my $nodes_by_name = node_data($nodes);
 
-    link_data_together($nodes_by_name, $nodes_by_id);
+    link_structs($nodes_by_name, $nodes_by_id);   # deletes Field
+    link_enums($nodes_by_name, $nodes_by_id);
+    link_functions($nodes_by_name, $nodes_by_id);
+    link_typedefs($nodes_by_name, $nodes_by_id);
 
+    print Dumper($nodes_by_name);
 }
 
-sub link_data_together {
+sub link_typedefs {
     my ($nodes_by_name, $nodes_by_id) = @_;
 
-    link_structs($nodes_by_name, $nodes_by_id);   # deletes Field
-    #print "STRUCT:\n" . Dumper($nodes_by_name->{Struct});exit;
-    link_enums($nodes_by_name, $nodes_by_id);
-    #print "ENUM:\n" . Dumper($nodes_by_name->{Enumeration});exit;
-    link_functions($nodes_by_name, $nodes_by_id);
-    print "FUNCTION:\n" . Dumper($nodes_by_name->{Function});exit;
+    my $typedefs = $nodes_by_name->{Typedef};
+    foreach my $typedef_id (keys %$typedefs) {
+        my $typedef = $typedefs->{$typedef_id};
 
-
+        my $type_id = $typedef->{type};
+        my $type_data = lookup_type($type_id, $nodes_by_id);
+        $typedef->{type} = $type_data;
+    }
 }
 
 sub link_functions {
