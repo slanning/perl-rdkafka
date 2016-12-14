@@ -259,6 +259,21 @@ rd_kafka_topic_conf_dup(rd_kafka_topic_conf_t *conf)
 ## rd_kafka_topic_conf_set_partitioner_cb (rd_kafka_topic_conf_t *topic_conf, int32_t (*partitioner) (const rd_kafka_topic_t *rkt, const void *keydata, size_t keylen, int32_t partition_cnt, void *rkt_opaque, void *msg_opaque))
 
 
+### PARTITIONERS
+
+## TODO - deferred until rd_kafka_topic_new is wrapped
+## int
+## rd_kafka_topic_partition_available(const rd_kafka_topic_t *rkt, int32_t partition)
+
+## int32_t
+## rd_kafka_msg_partitioner_random(const rd_kafka_topic_t *rkt, const void *key, size_t keylen, int32_t partition_cnt, void *opaque, void *msg_opaque)
+
+## int32_t
+## rd_kafka_msg_partitioner_consistent(const rd_kafka_topic_t *rkt, const void *key, size_t keylen, int32_t partition_cnt, void *opaque, void *msg_opaque)
+
+## int32_t
+## rd_kafka_msg_partitioner_consistent_random(const rd_kafka_topic_t *rkt, const void *key, size_t keylen, int32_t partition_cnt, void *opaque, void *msg_opaque)
+
 
 
 ### STRUCT CLASSES

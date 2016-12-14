@@ -17,6 +17,9 @@ rd_kafka_topic_partition_list_t T_PTROBJ
 rd_kafka_topic_partition_list_t * T_PTROBJ
 const rd_kafka_topic_partition_list_t * T_PTROBJ
 
+rd_kafka_topic_t * T_PTROBJ
+const rd_kafka_topic_t * T_PTROBJ
+
 rd_kafka_message_t T_PTROBJ
 rd_kafka_message_t * T_PTROBJ
 const rd_kafka_message_t * T_PTROBJ
@@ -39,6 +42,10 @@ rd_kafka_group_info T_PTROBJ
 rd_kafka_group_list T_PTROBJ
 rd_kafka_event_t T_PTROBJ
 
+# lib/ExtUtils/typemap has "void * T_PTR";
+# not sure yet if that's what I should use here, though
+# (but this compiles, at least)
+const void * T_PTR
 
 ## Perl --> C
 
