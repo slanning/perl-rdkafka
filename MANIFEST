@@ -12,5 +12,6 @@ t/030_topic_partition.t
 t/040_message.t
 050_conf.t
 060_topic_conf.t
+070_partitioner.t
 TODO.txt
 typemap
