@@ -13,5 +13,6 @@ t/040_message.t
 t/050_conf.t
 t/060_topic_conf.t
 t/070_partitioner.t
+t/100_main_handles.t
 TODO.txt
 typemap

@@ -13,7 +13,7 @@ use Test::More tests => 4;
 
     my $dup  = RdKafka::topic_conf_dup($conf);
     ok(ref($conf), "topic_conf_dup returns a ref");
-    my $expected_class = 'rd_kafka_topic_conf_tPtr';
+    $expected_class = 'rd_kafka_topic_conf_tPtr';
     ok(ref($conf) eq $expected_class, "topic_conf_dup ref isa '$expected_class'");
 }
 

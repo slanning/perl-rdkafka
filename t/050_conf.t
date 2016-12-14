@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use RdKafka qw/:event/;
+use RdKafka;
 
 use Test::More tests => 1;
 
@@ -27,6 +27,8 @@ use Test::More tests => 1;
 }
 
 {
+    # if version >= 0x000901ff
+    #use RdKafka qw/:event/;
     my $conf = RdKafka::conf_new();
 
     ## "events is a bitmask of RD_KAFKA_EVENT_* of events to enable

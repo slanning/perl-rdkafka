@@ -78,11 +78,15 @@ rd_kafka_errno()
 
 ### TOPIC PARTITION
 
+## #if RD_KAFKA_VERSION >= 0x000902ff
+
 ## (note: rd_kafka_topic_partition_new is in rdkafka_partition.h and not marked as RD_EXPORT)
 ## "This must not be called for elements in a topic partition list."
 ## For now there is no wrapping, until I figure out if you can create "topic partitions" outside of a list.
 ## void
 ## rd_kafka_topic_partition_destroy(rd_kafka_topic_partition_t *rktpar)
+
+## #endif
 
 rd_kafka_topic_partition_list_t *
 rd_kafka_topic_partition_list_new(int size)
@@ -156,9 +160,13 @@ rd_kafka_conf_dup(rd_kafka_conf_t *conf)
 
 ### TODO this conf section  #####
 
+## #if RD_KAFKA_VERSION >= 0x000902ff
+
 ### handle version
 ## void
 ## rd_kafka_conf_set_events(rd_kafka_conf_t *conf, int events)
+
+## #endif
 
 ## @deprecated See rd_kafka_conf_set_dr_msg_cb()
 ## void rd_kafka_conf_set_dr_cb(rd_kafka_conf_t *conf,
@@ -195,13 +203,17 @@ rd_kafka_conf_dup(rd_kafka_conf_t *conf)
 ##
 ## void
 ## rd_kafka_conf_set_socket_cb(rd_kafka_conf_t *conf, int (*socket_cb) (int domain, int type, int protocol, void *opaque))
-##
+
+## #if RD_KAFKA_VERSION >= 0x000902ff
+
 ## void
 ## rd_kafka_conf_set_connect_cb(rd_kafka_conf_t *conf, int (*connect_cb) (int sockfd, const struct sockaddr *addr, int addrlen, const char *id, void *opaque))
 ##
 ## void
 ## rd_kafka_conf_set_closesocket_cb(rd_kafka_conf_t *conf, int (*closesocket_cb) (int sockfd, void *opaque))
-##
+
+## #endif
+
 ## #ifndef _MSC_VER
 ## void rd_kafka_conf_set_open_cb(rd_kafka_conf_t *conf, int (*open_cb) (const char *pathname, int flags, mode_t mode, void *opaque))
 ## #endif
@@ -234,9 +246,6 @@ rd_kafka_conf_set_default_topic_conf(rd_kafka_conf_t *conf, rd_kafka_topic_conf_
 
 void
 rd_kafka_conf_properties_show(FILE *fp)
-
-################
-
 
 
 ### TOPIC CONFIGURATION
@@ -275,6 +284,62 @@ rd_kafka_topic_conf_dup(rd_kafka_topic_conf_t *conf)
 ## rd_kafka_msg_partitioner_consistent_random(const rd_kafka_topic_t *rkt, const void *key, size_t keylen, int32_t partition_cnt, void *opaque, void *msg_opaque)
 
 
+### MAIN HANDLES
+
+rd_kafka_t *
+rd_kafka_new(rd_kafka_type_t type, rd_kafka_conf_t *conf, char *errstr, size_t errstr_size)
+
+void
+rd_kafka_destroy(rd_kafka_t *rk)
+
+const char *
+rd_kafka_name(const rd_kafka_t *rk)
+
+char *
+rd_kafka_memberid(const rd_kafka_t *rk)
+
+rd_kafka_topic_t *
+rd_kafka_topic_new(rd_kafka_t *rk, const char *topic, rd_kafka_topic_conf_t *conf)
+
+void
+rd_kafka_topic_destroy(rd_kafka_topic_t *rkt)
+
+const char *
+rd_kafka_topic_name(const rd_kafka_topic_t *rkt)
+
+void *
+rd_kafka_topic_opaque(const rd_kafka_topic_t *rkt)
+
+int
+rd_kafka_poll(rd_kafka_t *rk, int timeout_ms)
+
+void
+rd_kafka_yield(rd_kafka_t *rk)
+
+rd_kafka_resp_err_t
+rd_kafka_pause_partitions(rd_kafka_t *rk, rd_kafka_topic_partition_list_t *partitions)
+
+rd_kafka_resp_err_t
+rd_kafka_resume_partitions(rd_kafka_t *rk, rd_kafka_topic_partition_list_t *partitions)
+
+## TODO: figure out how best to handle both return value (error) and the low/high IN_OUT params
+## rd_kafka_resp_err_t
+## rd_kafka_query_watermark_offsets(rd_kafka_t *rk, const char *topic, int32_t partition, int64_t *low, int64_t *high, int timeout_ms)
+##
+## rd_kafka_resp_err_t
+## rd_kafka_get_watermark_offsets(rd_kafka_t *rk, const char *topic, int32_t partition, int64_t *low, int64_t *high)
+
+# leave this out?
+# "rd_kafka_mem_free() must only be used for pointers returned by APIs
+# that explicitly mention using this function for freeing."
+# in particular, rd_kafka_memberid needs it,
+# but can probably do it when the SV* holding the string goes out of scope
+void
+rd_kafka_mem_free(rd_kafka_t *rk, void *ptr)
+
+
+
+##########
 
 ### STRUCT CLASSES
 
@@ -471,11 +536,12 @@ BOOT:
 #ifdef RD_KAFKA_MSG_F_COPY
   newCONSTSUB(stash, "RD_KAFKA_MSG_F_COPY", newSViv(RD_KAFKA_MSG_F_COPY));
 #endif
+  /* RD_KAFKA_MSG_F_BLOCK appeared in 0.9.2 */
 #ifdef RD_KAFKA_MSG_F_BLOCK
   newCONSTSUB(stash, "RD_KAFKA_MSG_F_BLOCK", newSViv(RD_KAFKA_MSG_F_BLOCK));
 #endif
   /*
-    EVENT
+    EVENT - 1st appeared in 0.9.2
   */
 #ifdef RD_KAFKA_EVENT_NONE
   newCONSTSUB(stash, "RD_KAFKA_EVENT_NONE", newSViv(RD_KAFKA_EVENT_NONE));
@@ -546,9 +612,9 @@ BOOT:
   newCONSTSUB(stash, "RD_KAFKA_RESP_ERR__AUTHENTICATION", newSViv(RD_KAFKA_RESP_ERR__AUTHENTICATION));
   newCONSTSUB(stash, "RD_KAFKA_RESP_ERR__NO_OFFSET", newSViv(RD_KAFKA_RESP_ERR__NO_OFFSET));
   newCONSTSUB(stash, "RD_KAFKA_RESP_ERR__OUTDATED", newSViv(RD_KAFKA_RESP_ERR__OUTDATED));
-/* TODO: just added? could also be generated from rd_kafka_get_err_descs in Perl
+#if RD_KAFKA_VERSION >= 0x000902ff
   newCONSTSUB(stash, "RD_KAFKA_RESP_ERR__TIMED_OUT_QUEUE", newSViv(RD_KAFKA_RESP_ERR__TIMED_OUT_QUEUE));
- */
+#endif
   newCONSTSUB(stash, "RD_KAFKA_RESP_ERR__END", newSViv(RD_KAFKA_RESP_ERR__END));
   /* Kafka broker errors: */
   newCONSTSUB(stash, "RD_KAFKA_RESP_ERR_UNKNOWN", newSViv(RD_KAFKA_RESP_ERR_UNKNOWN));

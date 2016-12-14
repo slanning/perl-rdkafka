@@ -13,21 +13,10 @@ use XSLoader ();
 
 XSLoader::load(__PACKAGE__, $VERSION);
 
-
 our %EXPORT_TAGS = (
     producer => [qw/
         RD_KAFKA_MSG_F_FREE
         RD_KAFKA_MSG_F_COPY
-        RD_KAFKA_MSG_F_BLOCK
-    /],
-    event => [qw/
-        RD_KAFKA_EVENT_NONE
-        RD_KAFKA_EVENT_DR
-        RD_KAFKA_EVENT_FETCH
-        RD_KAFKA_EVENT_LOG
-        RD_KAFKA_EVENT_ERROR
-        RD_KAFKA_EVENT_REBALANCE
-        RD_KAFKA_EVENT_OFFSET_COMMIT
     /],
     enums => [
         # rd_kafka_resp_err_t
@@ -66,7 +55,6 @@ our %EXPORT_TAGS = (
         RD_KAFKA_RESP_ERR__AUTHENTICATION
         RD_KAFKA_RESP_ERR__NO_OFFSET
         RD_KAFKA_RESP_ERR__OUTDATED
-        RD_KAFKA_RESP_ERR__TIMED_OUT_QUEUE
         RD_KAFKA_RESP_ERR__END
         RD_KAFKA_RESP_ERR_UNKNOWN
         RD_KAFKA_RESP_ERR_NO_ERROR
@@ -119,6 +107,24 @@ our %EXPORT_TAGS = (
           /,
     ],
 );
+
+if (RdKafka::version() >= 0x000902ff) {
+    push @{ $EXPORT_TAGS{producer} }, qw/RD_KAFKA_MSG_F_BLOCK/;
+
+    push @{ $EXPORT_TAGS{enums} }, qw/RD_KAFKA_RESP_ERR__TIMED_OUT_QUEUE/;
+
+    $EXPORT_TAGS{event} = [qw/
+        RD_KAFKA_EVENT_NONE
+        RD_KAFKA_EVENT_DR
+        RD_KAFKA_EVENT_FETCH
+        RD_KAFKA_EVENT_LOG
+        RD_KAFKA_EVENT_ERROR
+        RD_KAFKA_EVENT_REBALANCE
+        RD_KAFKA_EVENT_OFFSET_COMMIT
+    /];
+}
+
+
 $EXPORT_TAGS{'all'} = [
     'RD_KAFKA_PARTITION_UA',
     map { @{ $EXPORT_TAGS{$_} } } keys %EXPORT_TAGS

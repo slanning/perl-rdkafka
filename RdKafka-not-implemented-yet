@@ -1,56 +1,4 @@
 
-
-
-### MAIN HANDLES
-
-
-rd_kafka_t *
-rd_kafka_new(rd_kafka_type_t type, rd_kafka_conf_t *conf, char *errstr, size_t errstr_size)
-
-void
-rd_kafka_destroy(rd_kafka_t *rk)
-
-const char *
-rd_kafka_name(const rd_kafka_t *rk)
-
-char *
-rd_kafka_memberid(const rd_kafka_t *rk)
-
-rd_kafka_topic_t *
-rd_kafka_topic_new(rd_kafka_t *rk, const char *topic, rd_kafka_topic_conf_t *conf)
-
-void
-rd_kafka_topic_destroy(rd_kafka_topic_t *rkt)
-
-const char *
-rd_kafka_topic_name(const rd_kafka_topic_t *rkt)
-
-void *
-rd_kafka_topic_opaque(const rd_kafka_topic_t *rkt)
-
-int
-rd_kafka_poll(rd_kafka_t *rk, int timeout_ms)
-
-void
-rd_kafka_yield(rd_kafka_t *rk)
-
-rd_kafka_resp_err_t
-rd_kafka_pause_partitions(rd_kafka_t *rk, rd_kafka_topic_partition_list_t *partitions)
-
-rd_kafka_resp_err_t
-rd_kafka_resume_partitions(rd_kafka_t *rk, rd_kafka_topic_partition_list_t *partitions)
-
-rd_kafka_resp_err_t
-rd_kafka_query_watermark_offsets(rd_kafka_t *rk, const char *topic, int32_t partition, int64_t *low, int64_t *high, int timeout_ms)
-
-rd_kafka_resp_err_t
-rd_kafka_get_watermark_offsets(rd_kafka_t *rk, const char *topic, int32_t partition, int64_t *low, int64_t *high)
-
-# leave this out?
-void
-rd_kafka_mem_free(rd_kafka_t *rk, void *ptr)
-
-
 ### QUEUE API
 
 rd_kafka_queue_t *
@@ -58,6 +6,8 @@ rd_kafka_queue_new(rd_kafka_t *rk)
 
 void
 rd_kafka_queue_destroy(rd_kafka_queue_t *rkqu)
+
+#if RD_KAFKA_VERSION >= 0x000902ff
 
 rd_kafka_queue_t *
 rd_kafka_queue_get_main(rd_kafka_t *rk)
@@ -74,8 +24,11 @@ rd_kafka_queue_length(rd_kafka_queue_t *rkqu)
 void
 rd_kafka_queue_io_event_enable(rd_kafka_queue_t *rkqu, int fd, const void *payload, size_t size)
 
+#endif
+
 
 ## (simple legacy consumer API is omitted)
+## hm, I think we need it for 0.9.1
 
 
 ### KAFKACONSUMER API
@@ -107,8 +60,12 @@ rd_kafka_commit(rd_kafka_t *rk, const rd_kafka_topic_partition_list_t *offsets, 
 rd_kafka_resp_err_t
 rd_kafka_commit_message(rd_kafka_t *rk, const rd_kafka_message_t *rkmessage, int async)
 
+#if RD_KAFKA_VERSION >= 0x000902ff
+
 rd_kafka_resp_err_t
 rd_kafka_commit_queue(rd_kafka_t *rk, const rd_kafka_topic_partition_list_t *offsets, rd_kafka_queue_t *rkqu, void (*cb) (rd_kafka_t *rk, rd_kafka_resp_err_t err, rd_kafka_topic_partition_list_t *offsets, void *opaque), void *opaque)
+
+#endif
 
 rd_kafka_resp_err_t
 rd_kafka_committed(rd_kafka_t *rk, rd_kafka_topic_partition_list_t *partitions, int timeout_ms)
@@ -125,9 +82,12 @@ rd_kafka_produce(rd_kafka_topic_t *rkt, int32_t partition, int msgflags, void *p
 int
 rd_kafka_produce_batch(rd_kafka_topic_t *rkt, int32_t partition, int msgflags, rd_kafka_message_t *rkmessages, int message_cnt)
 
+#if RD_KAFKA_VERSION >= 0x000902ff
+
 rd_kafka_resp_err_t
 rd_kafka_flush(rd_kafka_t *rk, int timeout_ms)
 
+#endif
 
 ### METADATA API
 
@@ -187,6 +147,8 @@ rd_kafka_poll_set_consumer(rd_kafka_t *rk)
 
 ### EVENTS INTERFACE
 
+#if RD_KAFKA_VERSION >= 0x000902ff
+
 rd_kafka_event_type_t
 rd_kafka_event_type(const rd_kafka_event_t *rkev)
 
@@ -225,3 +187,5 @@ rd_kafka_event_topic_partition(rd_kafka_event_t *rkev)
 
 rd_kafka_event_t *
 rd_kafka_queue_poll(rd_kafka_queue_t *rkqu, int timeout_ms)
+
+#endif  /* RD_KAFKA_VERSION >= 0x000902ff */
