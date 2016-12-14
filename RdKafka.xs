@@ -1,6 +1,3 @@
-/* make this a compile flag? */
-#define SCOTT 1
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -12,6 +9,28 @@ extern "C" {
 #endif
 
 #include "librdkafka/rdkafka.h"
+
+
+/* make this a compile flag? */
+#define PERL_RDKAFKA_DEBUG 1
+
+/* no idea what's reasonable - probably should be configurable somehow */
+#define PERL_RDKAFKA_DEFAULT_ERRSTR_SIZE 1024
+
+/* typemap INPUT macros - might not be needed (leftover from a wrong path taken) */
+
+/* T_PTROBJ_IN(conf, ST(1), rd_kafka_conf_tPtr, new); */
+#define T_PTROBJ_IN(var, arg, type, func) do { \
+        if (SvROK(arg) && sv_derived_from(arg, #type)) {    \
+            int tmp = SvIV((SV*) SvRV(arg)); \
+            var = INT2PTR(type, tmp); \
+        } else \
+            Perl_croak_nocontext("RdKafka::" #func ": $" #var " is not of type " #type); \
+    } while (0)
+/* T_PV_IN(errstr, ST(1), const *); */
+#define T_PV_IN(var, arg, type) do { var = (type)SvPV_nolen(arg) } while (0)
+#define T_UV_IN(var, arg, type) do { var = (type)SvUV(arg) } while (0)
+
 
 MODULE = RdKafka    PACKAGE = RdKafka    PREFIX = rd_kafka_
 
@@ -286,8 +305,25 @@ rd_kafka_topic_conf_dup(rd_kafka_topic_conf_t *conf)
 
 ### MAIN HANDLES
 
+## originally:
+## rd_kafka_t *
+## rd_kafka_new(rd_kafka_type_t type, rd_kafka_conf_t *conf, char *errstr, size_t errstr_size)
 rd_kafka_t *
-rd_kafka_new(rd_kafka_type_t type, rd_kafka_conf_t *conf, char *errstr, size_t errstr_size)
+rd_kafka_new(rd_kafka_type_t type, rd_kafka_conf_t *conf = NULL, char *errstr = NO_INIT, size_t errstr_size = PERL_RDKAFKA_DEFAULT_ERRSTR_SIZE)
+  CODE:
+    SV *sv;
+    char *buf;
+
+    if (items < 3)
+        errstr_size = 0;
+
+    sv = newSVpv(errstr, 0);
+    buf = sv_grow(sv, errstr_size);
+
+    RETVAL = rd_kafka_new(type, conf, buf, errstr_size);
+  OUTPUT:
+    errstr
+    RETVAL
 
 void
 rd_kafka_destroy(rd_kafka_t *rk)
@@ -345,7 +381,7 @@ rd_kafka_mem_free(rd_kafka_t *rk, void *ptr)
 
 MODULE = RdKafka    PACKAGE = rd_kafka_topic_partition_tPtr    PREFIX = rd_kafka_
 
-#ifdef SCOTT
+#ifdef PERL_RDKAFKA_DEBUG
 
 void
 rd_kafka_DESTROY(rd_kafka_topic_partition_t * toppar)
@@ -419,7 +455,7 @@ MODULE = RdKafka    PACKAGE = rd_kafka_topic_partition_list_tPtr    PREFIX = rd_
 void
 rd_kafka_DESTROY(rd_kafka_topic_partition_list_t * list)
   CODE:
-#ifdef SCOTT
+#ifdef PERL_RDKAFKA_DEBUG
     printf("DESTROY rd_kafka_topic_partition_list_tPtr\n");
 #endif
     rd_kafka_topic_partition_list_destroy(list);
@@ -499,7 +535,7 @@ MODULE = RdKafka    PACKAGE = rd_kafka_conf_tPtr    PREFIX = rd_kafka_
 void
 rd_kafka_DESTROY(rd_kafka_conf_t * conf)
   CODE:
-#ifdef SCOTT
+#ifdef PERL_RDKAFKA_DEBUG
     printf("DESTROY rd_kafka_conf_tPtr\n");
 #endif
     rd_kafka_conf_destroy(conf);
@@ -510,10 +546,21 @@ MODULE = RdKafka    PACKAGE = rd_kafka_topic_conf_tPtr    PREFIX = rd_kafka_
 void
 rd_kafka_DESTROY(rd_kafka_topic_conf_t *topic_conf)
   CODE:
-#ifdef SCOTT
+#ifdef PERL_RDKAFKA_DEBUG
     printf("DESTROY rd_kafka_topic_conf_tPtr\n");
 #endif
     rd_kafka_topic_conf_destroy(topic_conf);
+
+
+MODULE = RdKafka    PACKAGE = rd_kafka_tPtr    PREFIX = rd_kafka_
+
+void
+rd_kafka_DESTROY(rd_kafka_t *rk)
+  CODE:
+#ifdef PERL_RDKAFKA_DEBUG
+    printf("DESTROY rd_kafka_tPtr\n");
+#endif
+    rd_kafka_destroy(rk);
 
 
 
