@@ -1,0 +1,5 @@
+.*~
+genscripts/
+\.git.*
+MANIFEST.SKIP
+RdKafka-not-implemented-yet

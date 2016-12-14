@@ -28,7 +28,7 @@ rd_kafka_queue_io_event_enable(rd_kafka_queue_t *rkqu, int fd, const void *paylo
 
 
 ## (simple legacy consumer API is omitted)
-## hm, I think we need it for 0.9.1
+## do we need it for 0.9.1?
 
 
 ### KAFKACONSUMER API
