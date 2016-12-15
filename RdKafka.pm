@@ -104,6 +104,7 @@ our %EXPORT_TAGS = (
         qw/
         RD_KAFKA_CONF_UNKNOWN
         RD_KAFKA_CONF_INVALID
+        RD_KAFKA_CONF_OK
           /,
     ],
 );

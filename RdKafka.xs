@@ -19,13 +19,13 @@ extern "C" {
 
 /* typemap INPUT macros - might not be needed (leftover from a wrong path taken) */
 
-/* T_PTROBJ_IN(conf, ST(1), rd_kafka_conf_tPtr, new); */
-#define T_PTROBJ_IN(var, arg, type, func) do { \
-        if (SvROK(arg) && sv_derived_from(arg, #type)) {    \
-            int tmp = SvIV((SV*) SvRV(arg)); \
+/* T_PTROBJ_IN(conf, ST(1), rd_kafka_conf_t *, rd_kafka_conf_tPtr, new); */
+#define T_PTROBJ_IN(var, arg, type, ntype, func) do { \
+        if (SvROK(arg) && sv_derived_from(arg, #ntype)) {    \
+            IV tmp = SvIV((SV*) SvRV(arg)); \
             var = INT2PTR(type, tmp); \
         } else \
-            Perl_croak_nocontext("RdKafka::" #func ": $" #var " is not of type " #type); \
+            Perl_croak_nocontext("RdKafka::" #func ": $" #var " is not of type " #ntype); \
     } while (0)
 /* T_PV_IN(errstr, ST(1), const *); */
 #define T_PV_IN(var, arg, type) do { var = (type)SvPV_nolen(arg) } while (0)
@@ -45,7 +45,7 @@ rd_kafka_version_str()
 
 ### CONSTANTS, ERRORS, TYPES
 
-## deprecated RD_KAFKA_DEBUG_CONTEXTS is omitted
+## omitted: deprecated RD_KAFKA_DEBUG_CONTEXTS
 
 const char *
 rd_kafka_get_debug_contexts()
@@ -161,20 +161,29 @@ rd_kafka_message_timestamp(const rd_kafka_message_t *rkmessage, OUT rd_kafka_tim
 rd_kafka_conf_t *
 rd_kafka_conf_new()
 
-## This is omitted; the Perl DESTROY will call it, in rd_kafka_conf_tPtr below
-## void
-## rd_kafka_conf_destroy(rd_kafka_conf_t *conf)
+## I believe rd_kafka_new will normally destroy this itself (?)
+## but I guess if rd_kafka_conf_dup is called...
+## (should add something to DESTROY when it goes out of scope, though...)
+void
+rd_kafka_conf_destroy(rd_kafka_conf_t *conf)
 
 rd_kafka_conf_t *
 rd_kafka_conf_dup(rd_kafka_conf_t *conf)
 ## rd_kafka_conf_dup(const rd_kafka_conf_t *conf)
 
-## TODO
-## errstr_size is what you specify for the buffer size of errstr,
-## so I wonder if this should be variable size (conf,name,value,...)
-## or maybe should just croak on error (with maybe a flag to only warn/croak)
 ## rd_kafka_conf_res_t
 ## rd_kafka_conf_set(rd_kafka_conf_t *conf, const char *name, const char *value, char *errstr, size_t errstr_size)
+## TODO?
+## just croaking on error for now
+void
+rd_kafka_conf_set(rd_kafka_conf_t *conf, const char *name, const char *value)
+  PREINIT:
+    char buf[PERL_RDKAFKA_DEFAULT_ERRSTR_SIZE];
+    rd_kafka_conf_res_t res;
+  CODE:
+    res = rd_kafka_conf_set(conf, name, value, buf, PERL_RDKAFKA_DEFAULT_ERRSTR_SIZE);
+    if (res != RD_KAFKA_CONF_OK)
+        croak("rd_kafka_conf_set failed (%d): %s", res, buf);
 
 
 ### TODO this conf section  #####
@@ -308,49 +317,73 @@ rd_kafka_topic_conf_dup(rd_kafka_topic_conf_t *conf)
 ## originally:
 ## rd_kafka_t *
 ## rd_kafka_new(rd_kafka_type_t type, rd_kafka_conf_t *conf, char *errstr, size_t errstr_size)
+## For now at least, the conf object is required (even if the default)
+## and this will croak if there's an error from rd_kafka_new.
+## I'd like to allow conf to be optional and errstr to hold an error,
+## but I haven't figured out how to do that.
 rd_kafka_t *
-rd_kafka_new(rd_kafka_type_t type, rd_kafka_conf_t *conf = NULL, char *errstr = NO_INIT, size_t errstr_size = PERL_RDKAFKA_DEFAULT_ERRSTR_SIZE)
+rd_kafka_new(rd_kafka_type_t type, rd_kafka_conf_t *conf)
+  PREINIT:
+    char buf[PERL_RDKAFKA_DEFAULT_ERRSTR_SIZE];
+    rd_kafka_conf_t *C_conf;
   CODE:
-    SV *sv;
-    char *buf;
-
-    if (items < 3)
-        errstr_size = 0;
-
-    sv = newSVpv(errstr, 0);
-    buf = sv_grow(sv, errstr_size);
-
-    RETVAL = rd_kafka_new(type, conf, buf, errstr_size);
+    RETVAL = rd_kafka_new(type, conf, buf, PERL_RDKAFKA_DEFAULT_ERRSTR_SIZE);
+    if (RETVAL == NULL)
+        croak("rd_kafka_new failed: %s", buf);
   OUTPUT:
-    errstr
     RETVAL
 
-void
-rd_kafka_destroy(rd_kafka_t *rk)
+## This is omitted; the Perl DESTROY will call it, in rd_kafka_tPtr below
+## void
+## rd_kafka_destroy(rd_kafka_t *rk)
 
 const char *
-rd_kafka_name(const rd_kafka_t *rk)
+rd_kafka_name(rd_kafka_t *rk)
+#rd_kafka_name(const rd_kafka_t *rk)
 
+## TODO
+## see rd_kafka_mem_free
 char *
-rd_kafka_memberid(const rd_kafka_t *rk)
+rd_kafka_memberid(rd_kafka_t *rk)
+#rd_kafka_memberid(const rd_kafka_t *rk)
 
+## * \p conf is an optional configuration for the topic created with
+## * `rd_kafka_topic_conf_new()` that will be used instead of the default
+## * topic configuration.
+## * The \p conf object is freed by this function and must not be used or
+## * destroyed by the application sub-sequently.
+## * See `rd_kafka_topic_conf_set()` et.al for more information.
+## *
+## * Topic handles are refcounted internally and calling rd_kafka_topic_new()
+## * again with the same topic name will return the previous topic handle
+## * without updating the original handle's configuration.
+## * Applications must eventually call rd_kafka_topic_destroy() for each
+## * succesfull call to rd_kafka_topic_new() to clear up resources.
 rd_kafka_topic_t *
 rd_kafka_topic_new(rd_kafka_t *rk, const char *topic, rd_kafka_topic_conf_t *conf)
 
+## TODO
 void
 rd_kafka_topic_destroy(rd_kafka_topic_t *rkt)
 
 const char *
-rd_kafka_topic_name(const rd_kafka_topic_t *rkt)
+rd_kafka_topic_name(rd_kafka_topic_t *rkt)
+#rd_kafka_topic_name(const rd_kafka_topic_t *rkt)
 
 void *
-rd_kafka_topic_opaque(const rd_kafka_topic_t *rkt)
+rd_kafka_topic_opaque(rd_kafka_topic_t *rkt)
+#rd_kafka_topic_opaque(const rd_kafka_topic_t *rkt)
 
 int
 rd_kafka_poll(rd_kafka_t *rk, int timeout_ms)
 
+## TODO: tests once callbacks are implemented
 void
 rd_kafka_yield(rd_kafka_t *rk)
+
+
+# start testing here
+
 
 rd_kafka_resp_err_t
 rd_kafka_pause_partitions(rd_kafka_t *rk, rd_kafka_topic_partition_list_t *partitions)
@@ -528,17 +561,15 @@ MODULE = RdKafka    PACKAGE = rd_kafka_message_tPtr    PREFIX = rd_kafka_
 
 MODULE = RdKafka    PACKAGE = rd_kafka_conf_tPtr    PREFIX = rd_kafka_
 
-## I think this is okay. (?)
-## There seem to be no places rd_kafka_conf_tPtr is returned
-## besides conf_new and conf_dup,
-## so I think the underlying C conf should be destroyed when Perl DESTROY happens.
+## rd_kafka_new destroys the conf, so can't call rd_kafka_conf_destroy.
+## Not sure how to deal with that now.
 void
 rd_kafka_DESTROY(rd_kafka_conf_t * conf)
   CODE:
 #ifdef PERL_RDKAFKA_DEBUG
     printf("DESTROY rd_kafka_conf_tPtr\n");
 #endif
-    rd_kafka_conf_destroy(conf);
+    /* rd_kafka_conf_destroy(conf); */
 
 
 MODULE = RdKafka    PACKAGE = rd_kafka_topic_conf_tPtr    PREFIX = rd_kafka_
@@ -549,7 +580,7 @@ rd_kafka_DESTROY(rd_kafka_topic_conf_t *topic_conf)
 #ifdef PERL_RDKAFKA_DEBUG
     printf("DESTROY rd_kafka_topic_conf_tPtr\n");
 #endif
-    rd_kafka_topic_conf_destroy(topic_conf);
+    /* rd_kafka_topic_conf_destroy(topic_conf); */
 
 
 MODULE = RdKafka    PACKAGE = rd_kafka_tPtr    PREFIX = rd_kafka_
@@ -560,7 +591,7 @@ rd_kafka_DESTROY(rd_kafka_t *rk)
 #ifdef PERL_RDKAFKA_DEBUG
     printf("DESTROY rd_kafka_tPtr\n");
 #endif
-    rd_kafka_destroy(rk);
+    rd_kafka_destroy(rk);  /* should do this? */
 
 
 
@@ -617,10 +648,11 @@ BOOT:
   newCONSTSUB(stash, "RD_KAFKA_PRODUCER", newSViv(RD_KAFKA_PRODUCER));
   newCONSTSUB(stash, "RD_KAFKA_CONSUMER", newSViv(RD_KAFKA_CONSUMER));
   /*
-    rd_kafka_conf_res_type_t
+    rd_kafka_conf_res_t
    */
   newCONSTSUB(stash, "RD_KAFKA_CONF_UNKNOWN", newSViv(RD_KAFKA_CONF_UNKNOWN));
   newCONSTSUB(stash, "RD_KAFKA_CONF_INVALID", newSViv(RD_KAFKA_CONF_INVALID));
+  newCONSTSUB(stash, "RD_KAFKA_CONF_OK",      newSViv(RD_KAFKA_CONF_OK));
   /*
     rd_kafka_resp_err_t enum
    */
