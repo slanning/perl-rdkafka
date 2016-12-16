@@ -11,6 +11,7 @@ rd_kafka_conf_res_t T_ENUM
 
 rd_kafka_err_desc T_PTROBJ
 
+## only ptrs should be here?
 rd_kafka_topic_partition_t T_PTROBJ
 rd_kafka_topic_partition_t * T_PTROBJ
 rd_kafka_topic_partition_list_t T_PTROBJ
@@ -41,6 +42,8 @@ rd_kafka_group_member_info T_PTROBJ
 rd_kafka_group_info T_PTROBJ
 rd_kafka_group_list T_PTROBJ
 rd_kafka_event_t T_PTROBJ
+
+rd_kafka_queue_t * T_PTROBJ
 
 # lib/ExtUtils/typemap has "void * T_PTR";
 # not sure yet if that's what I should use here, though

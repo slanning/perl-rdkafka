@@ -403,6 +403,40 @@ void
 rd_kafka_mem_free(rd_kafka_t *rk, void *ptr)
 
 
+### QUEUE API
+
+#  "See rd_kafka_consume_start_queue(), rd_kafka_consume_queue(), et.al."
+rd_kafka_queue_t *
+rd_kafka_queue_new(rd_kafka_t *rk)
+
+void
+rd_kafka_queue_destroy(rd_kafka_queue_t *rkqu)
+
+## TODO - after 0.9.2 installed
+#if RD_KAFKA_VERSION >= 0x000902ff
+
+rd_kafka_queue_t *
+rd_kafka_queue_get_main(rd_kafka_t *rk)
+
+rd_kafka_queue_t *
+rd_kafka_queue_get_consumer(rd_kafka_t *rk)
+
+void
+rd_kafka_queue_forward(rd_kafka_queue_t *src, rd_kafka_queue_t *dst)
+
+size_t
+rd_kafka_queue_length(rd_kafka_queue_t *rkqu)
+
+void
+rd_kafka_queue_io_event_enable(rd_kafka_queue_t *rkqu, int fd, const void *payload, size_t size)
+
+#endif   /* RD_KAFKA_VERSION >= 0x000902ff */
+
+
+## (simple legacy consumer API is omitted)
+## do we need it for 0.9.1?
+
+
 
 ##########
 
@@ -588,6 +622,17 @@ rd_kafka_DESTROY(rd_kafka_t *rk)
     printf("DESTROY rd_kafka_tPtr\n");
 #endif
     rd_kafka_destroy(rk);  /* should do this? */
+
+
+MODULE = RdKafka    PACKAGE = rd_kafka_queue_tPtr    PREFIX = rd_kafka_
+
+void
+rd_kafka_DESTROY(rd_kafka_queue_t *rkq)
+  CODE:
+#ifdef PERL_RDKAFKA_DEBUG
+    printf("DESTROY rd_kafka_queue_tPtr\n");
+#endif
+    rd_kafka_queue_destroy(rkq);
 
 
 

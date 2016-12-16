@@ -1,36 +1,4 @@
 
-### QUEUE API
-
-rd_kafka_queue_t *
-rd_kafka_queue_new(rd_kafka_t *rk)
-
-void
-rd_kafka_queue_destroy(rd_kafka_queue_t *rkqu)
-
-#if RD_KAFKA_VERSION >= 0x000902ff
-
-rd_kafka_queue_t *
-rd_kafka_queue_get_main(rd_kafka_t *rk)
-
-rd_kafka_queue_t *
-rd_kafka_queue_get_consumer(rd_kafka_t *rk)
-
-void
-rd_kafka_queue_forward(rd_kafka_queue_t *src, rd_kafka_queue_t *dst)
-
-size_t
-rd_kafka_queue_length(rd_kafka_queue_t *rkqu)
-
-void
-rd_kafka_queue_io_event_enable(rd_kafka_queue_t *rkqu, int fd, const void *payload, size_t size)
-
-#endif
-
-
-## (simple legacy consumer API is omitted)
-## do we need it for 0.9.1?
-
-
 ### KAFKACONSUMER API
 
 rd_kafka_resp_err_t
