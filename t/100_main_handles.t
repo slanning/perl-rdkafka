@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use RdKafka qw/:enums/;
 
-use Test::More tests => 7;
+use Test::More tests => 9;
 
 
 ## For now at least, the conf object is required (even if the default)
@@ -89,6 +89,20 @@ use Test::More tests => 7;
 }
 
 {
-    ;
-    # pause_partitions
+    my $list_size = 5;
+    my $partitions = RdKafka::topic_partition_list_new($list_size);
+    my $conf = RdKafka::conf_new();
+    my $rk = RdKafka::new(RD_KAFKA_PRODUCER, $conf);
+
+    my $res = RdKafka::pause_partitions($rk, $partitions);
+    is($res, RD_KAFKA_RESP_ERR_NO_ERROR, "pause_partitions had no error");
+
+    $res = RdKafka::resume_partitions($rk, $partitions);
+    is($res, RD_KAFKA_RESP_ERR_NO_ERROR, "resume_partitions had no error");
+
+    # how to check failure?
 }
+
+# query_watermark_offsets
+# get_watermark_offsets
+

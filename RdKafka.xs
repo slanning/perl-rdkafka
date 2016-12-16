@@ -381,10 +381,6 @@ rd_kafka_poll(rd_kafka_t *rk, int timeout_ms)
 void
 rd_kafka_yield(rd_kafka_t *rk)
 
-
-# start testing here
-
-
 rd_kafka_resp_err_t
 rd_kafka_pause_partitions(rd_kafka_t *rk, rd_kafka_topic_partition_list_t *partitions)
 
