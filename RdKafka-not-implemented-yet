@@ -1,46 +1,4 @@
 
-### KAFKACONSUMER API
-
-rd_kafka_resp_err_t
-rd_kafka_subscribe(rd_kafka_t *rk, const rd_kafka_topic_partition_list_t *topics)
-
-rd_kafka_resp_err_t
-rd_kafka_unsubscribe(rd_kafka_t *rk)
-
-rd_kafka_resp_err_t
-rd_kafka_subscription(rd_kafka_t *rk, rd_kafka_topic_partition_list_t **topics)
-
-rd_kafka_message_t *
-rd_kafka_consumer_poll(rd_kafka_t *rk, int timeout_ms)
-
-rd_kafka_resp_err_t
-rd_kafka_consumer_close(rd_kafka_t *rk)
-
-rd_kafka_resp_err_t
-rd_kafka_assign(rd_kafka_t *rk, const rd_kafka_topic_partition_list_t *partitions)
-
-rd_kafka_resp_err_t
-rd_kafka_assignment(rd_kafka_t *rk, rd_kafka_topic_partition_list_t **partitions)
-
-rd_kafka_resp_err_t
-rd_kafka_commit(rd_kafka_t *rk, const rd_kafka_topic_partition_list_t *offsets, int async)
-
-rd_kafka_resp_err_t
-rd_kafka_commit_message(rd_kafka_t *rk, const rd_kafka_message_t *rkmessage, int async)
-
-#if RD_KAFKA_VERSION >= 0x000902ff
-
-rd_kafka_resp_err_t
-rd_kafka_commit_queue(rd_kafka_t *rk, const rd_kafka_topic_partition_list_t *offsets, rd_kafka_queue_t *rkqu, void (*cb) (rd_kafka_t *rk, rd_kafka_resp_err_t err, rd_kafka_topic_partition_list_t *offsets, void *opaque), void *opaque)
-
-#endif
-
-rd_kafka_resp_err_t
-rd_kafka_committed(rd_kafka_t *rk, rd_kafka_topic_partition_list_t *partitions, int timeout_ms)
-
-rd_kafka_resp_err_t
-rd_kafka_position(rd_kafka_t *rk, rd_kafka_topic_partition_list_t *partitions)
-
 
 ### PRODUCER API
 

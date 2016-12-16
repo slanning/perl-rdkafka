@@ -4,6 +4,7 @@ extern "C" {
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
+#include "ppport.h"
 #ifdef __cplusplus
 }
 #endif
@@ -20,16 +21,16 @@ extern "C" {
 /* typemap INPUT macros - might not be needed (leftover from a wrong path taken) */
 
 /* T_PTROBJ_IN(conf, ST(1), rd_kafka_conf_t *, rd_kafka_conf_tPtr, new); */
-#define T_PTROBJ_IN(var, arg, type, ntype, func) do { \
+#define T_PTROBJ_IN(var, arg, type, ntype, func) STMT_START { \
         if (SvROK(arg) && sv_derived_from(arg, #ntype)) {    \
             IV tmp = SvIV((SV*) SvRV(arg)); \
             var = INT2PTR(type, tmp); \
         } else \
             Perl_croak_nocontext("RdKafka::" #func ": $" #var " is not of type " #ntype); \
-    } while (0)
+    } STMT_END
 /* T_PV_IN(errstr, ST(1), const *); */
-#define T_PV_IN(var, arg, type) do { var = (type)SvPV_nolen(arg) } while (0)
-#define T_UV_IN(var, arg, type) do { var = (type)SvUV(arg) } while (0)
+#define T_PV_IN(var, arg, type) STMT_START { var = (type)SvPV_nolen(arg) } STMT_END
+#define T_UV_IN(var, arg, type) STMT_START { var = (type)SvUV(arg) } STMT_END
 
 
 MODULE = RdKafka    PACKAGE = RdKafka    PREFIX = rd_kafka_
@@ -97,15 +98,14 @@ rd_kafka_errno()
 
 ### TOPIC PARTITION
 
-## #if RD_KAFKA_VERSION >= 0x000902ff
+#if RD_KAFKA_VERSION >= 0x000902ff
 
-## (note: rd_kafka_topic_partition_new is in rdkafka_partition.h and not marked as RD_EXPORT)
 ## "This must not be called for elements in a topic partition list."
-## For now there is no wrapping, until I figure out if you can create "topic partitions" outside of a list.
-## void
-## rd_kafka_topic_partition_destroy(rd_kafka_topic_partition_t *rktpar)
+## rd_kafka_event_topic_partition needs this to destroy its return value.
+void
+rd_kafka_topic_partition_destroy(rd_kafka_topic_partition_t *rktpar)
 
-## #endif
+#endif
 
 rd_kafka_topic_partition_list_t *
 rd_kafka_topic_partition_list_new(int size)
@@ -435,6 +435,52 @@ rd_kafka_queue_io_event_enable(rd_kafka_queue_t *rkqu, int fd, const void *paylo
 
 ## (simple legacy consumer API is omitted)
 ## do we need it for 0.9.1?
+
+
+### KAFKACONSUMER API
+
+## TODO: deferred topic_partition_list ones until that is handled properly
+## (there needs to be state info stored in stored in rd_kafka_topic_partition_list_t *)
+
+## rd_kafka_resp_err_t
+## rd_kafka_subscribe(rd_kafka_t *rk, const rd_kafka_topic_partition_list_t *topics)
+
+rd_kafka_resp_err_t
+rd_kafka_unsubscribe(rd_kafka_t *rk)
+
+## rd_kafka_resp_err_t
+## rd_kafka_subscription(rd_kafka_t *rk, rd_kafka_topic_partition_list_t **topics)
+
+rd_kafka_message_t *
+rd_kafka_consumer_poll(rd_kafka_t *rk, int timeout_ms)
+
+rd_kafka_resp_err_t
+rd_kafka_consumer_close(rd_kafka_t *rk)
+
+## rd_kafka_resp_err_t
+## rd_kafka_assign(rd_kafka_t *rk, const rd_kafka_topic_partition_list_t *partitions)
+
+## rd_kafka_resp_err_t
+## rd_kafka_assignment(rd_kafka_t *rk, rd_kafka_topic_partition_list_t **partitions)
+
+## rd_kafka_resp_err_t
+## rd_kafka_commit(rd_kafka_t *rk, const rd_kafka_topic_partition_list_t *offsets, int async)
+
+rd_kafka_resp_err_t
+rd_kafka_commit_message(rd_kafka_t *rk, const rd_kafka_message_t *rkmessage, int async)
+
+#if RD_KAFKA_VERSION >= 0x000902ff
+
+## rd_kafka_resp_err_t
+## rd_kafka_commit_queue(rd_kafka_t *rk, const rd_kafka_topic_partition_list_t *offsets, rd_kafka_queue_t *rkqu, void (*cb) (rd_kafka_t *rk, rd_kafka_resp_err_t err, rd_kafka_topic_partition_list_t *offsets, void *opaque), void *opaque)
+
+#endif
+
+## rd_kafka_resp_err_t
+## rd_kafka_committed(rd_kafka_t *rk, rd_kafka_topic_partition_list_t *partitions, int timeout_ms)
+
+## rd_kafka_resp_err_t
+## rd_kafka_position(rd_kafka_t *rk, rd_kafka_topic_partition_list_t *partitions)
 
 
 
