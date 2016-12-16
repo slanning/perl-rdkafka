@@ -1,6 +1,7 @@
 Changes.txt
 Makefile.PL
 MANIFEST
+ppport.h
 RdKafka.xs
 RdKafka.pm
 README.txt
