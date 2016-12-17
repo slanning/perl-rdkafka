@@ -12,6 +12,9 @@ extern "C" {
 #include "librdkafka/rdkafka.h"
 
 
+typedef rd_kafka_topic_partition_t *RdKafka__TopicPartition;
+
+
 /* make this a compile flag? */
 #define PERL_RDKAFKA_DEBUG 1
 
@@ -35,13 +38,14 @@ extern "C" {
 
 MODULE = RdKafka    PACKAGE = RdKafka    PREFIX = rd_kafka_
 
+
 ### VERSION
 
 int
-rd_kafka_version()
+rd_kafka_version(...)
 
 const char *
-rd_kafka_version_str()
+rd_kafka_version_str(...)
 
 
 ### CONSTANTS, ERRORS, TYPES
@@ -103,7 +107,7 @@ rd_kafka_errno()
 ## "This must not be called for elements in a topic partition list."
 ## rd_kafka_event_topic_partition needs this to destroy its return value.
 void
-rd_kafka_topic_partition_destroy(rd_kafka_topic_partition_t *rktpar)
+rd_kafka_topic_partition_destroy(RdKafka::TopicPartition rktpar)
 
 #endif
 
@@ -114,7 +118,7 @@ rd_kafka_topic_partition_list_new(int size)
 ## void
 ## rd_kafka_topic_partition_list_destroy(rd_kafka_topic_partition_list_t *rkparlist)
 
-rd_kafka_topic_partition_t *
+RdKafka::TopicPartition
 rd_kafka_topic_partition_list_add(rd_kafka_topic_partition_list_t *rktparlist, const char *topic, int32_t partition)
 
 void
@@ -133,7 +137,7 @@ rd_kafka_topic_partition_list_copy(rd_kafka_topic_partition_list_t *src)
 rd_kafka_resp_err_t
 rd_kafka_topic_partition_list_set_offset(rd_kafka_topic_partition_list_t *rktparlist, const char *topic, int32_t partition, int64_t offset)
 
-rd_kafka_topic_partition_t *
+RdKafka::TopicPartition
 rd_kafka_topic_partition_list_find(rd_kafka_topic_partition_list_t *rktparlist, const char *topic, int32_t partition)
 
 
@@ -488,14 +492,14 @@ rd_kafka_commit_message(rd_kafka_t *rk, const rd_kafka_message_t *rkmessage, int
 
 ### STRUCT CLASSES
 
-MODULE = RdKafka    PACKAGE = rd_kafka_topic_partition_tPtr    PREFIX = rd_kafka_
+MODULE = RdKafka    PACKAGE = RdKafka::TopicPartition    PREFIX = rd_kafka_
 
 #ifdef PERL_RDKAFKA_DEBUG
 
 void
-rd_kafka_DESTROY(rd_kafka_topic_partition_t * toppar)
+rd_kafka_DESTROY(RdKafka::TopicPartition toppar)
   CODE:
-    printf("DESTROY rd_kafka_topic_partition_tPtr\n");
+    printf("DESTROY RdKafka::TopicPartition\n");
     /* I think this should not be done, (?)
        since rd_kafka_topic_partition_destroy should not be called
        on elements in a topic-partition list
@@ -506,21 +510,21 @@ rd_kafka_DESTROY(rd_kafka_topic_partition_t * toppar)
 ## struct rd_kafka_topic_partition_t accessors: topic, partition, offset, [metadata,] metadata_size(?), [opaque,] err
 
 char *
-rd_kafka_topic(rd_kafka_topic_partition_t *toppar)
+rd_kafka_topic(RdKafka::TopicPartition toppar)
   CODE:
     RETVAL = toppar->topic;
   OUTPUT:
     RETVAL
 
 int32_t
-rd_kafka_partition(rd_kafka_topic_partition_t *toppar)
+rd_kafka_partition(RdKafka::TopicPartition toppar)
   CODE:
     RETVAL = toppar->partition;
   OUTPUT:
     RETVAL
 
 int64_t
-rd_kafka_offset(rd_kafka_topic_partition_t *toppar)
+rd_kafka_offset(RdKafka::TopicPartition toppar)
   CODE:
     RETVAL = toppar->offset;
   OUTPUT:
@@ -529,14 +533,14 @@ rd_kafka_offset(rd_kafka_topic_partition_t *toppar)
 ## TODO: deferred until implementing metadata API (I think)
 ##        void        *metadata;          /**< Metadata */
 ## ???
-## rd_kafka_metadata(rd_kafka_topic_partition_t *toppar)
+## rd_kafka_metadata(RdKafka::TopicPartition toppar)
 ##   CODE:
 ##     RETVAL = toppar->metadata;
 ##   OUTPUT:
 ##     RETVAL
 
 size_t
-rd_kafka_metadata_size(rd_kafka_topic_partition_t *toppar)
+rd_kafka_metadata_size(RdKafka::TopicPartition toppar)
   CODE:
     RETVAL = toppar->metadata_size;
   OUTPUT:
@@ -545,14 +549,14 @@ rd_kafka_metadata_size(rd_kafka_topic_partition_t *toppar)
 ## TODO: figure out later what "opaque" is
 ##        void        *opaque;            /**< Application opaque */
 ## ???
-## rd_kafka_opaque(rd_kafka_topic_partition_t *toppar)
+## rd_kafka_opaque(RdKafka::TopicPartition toppar)
 ##   CODE:
 ##     RETVAL = toppar->opaque;
 ##   OUTPUT:
 ##     RETVAL
 
 rd_kafka_resp_err_t
-rd_kafka_err(rd_kafka_topic_partition_t *toppar)
+rd_kafka_err(RdKafka::TopicPartition toppar)
   CODE:
     RETVAL = toppar->err;
   OUTPUT:
@@ -585,11 +589,12 @@ rd_kafka_size(rd_kafka_topic_partition_list_t *list)
   OUTPUT:
     RETVAL
 
+## TODO: I don't think this is right
 ## I changed this from rd_kafka_topic_partition_t * to aref
 AV *
 rd_kafka_elems(rd_kafka_topic_partition_list_t *list)
   CODE:
-    rd_kafka_topic_partition_t *toppar;
+    RdKafka__TopicPartition toppar;
     int cnt;
     RETVAL = (AV *) sv_2mortal((SV *)newAV());  // AV* have to be made mortal
 
@@ -598,7 +603,7 @@ rd_kafka_elems(rd_kafka_topic_partition_list_t *list)
 
     while (--cnt >= 0) {
         SV *sv = newSV(0);
-        sv_setref_pv(sv, "rd_kafka_topic_partition_tPtr", toppar);
+        sv_setref_pv(sv, "RdKafka::TopicPartition", toppar);
         av_push(RETVAL, sv);
 
         ++toppar;

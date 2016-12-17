@@ -12,8 +12,9 @@ rd_kafka_conf_res_t T_ENUM
 rd_kafka_err_desc T_PTROBJ
 
 ## only ptrs should be here?
-rd_kafka_topic_partition_t T_PTROBJ
-rd_kafka_topic_partition_t * T_PTROBJ
+
+#####rd_kafka_topic_partition_t * T_PTROBJ
+RdKafka::TopicPartition T_PTROBJ
 rd_kafka_topic_partition_list_t T_PTROBJ
 rd_kafka_topic_partition_list_t * T_PTROBJ
 const rd_kafka_topic_partition_list_t * T_PTROBJ

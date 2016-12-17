@@ -108,7 +108,7 @@ rd_kafka_event_log(rd_kafka_event_t *rkev, const char **fac, const char **str, i
 rd_kafka_topic_partition_list_t *
 rd_kafka_event_topic_partition_list(rd_kafka_event_t *rkev)
 
-rd_kafka_topic_partition_t *
+RdKafka::TopicPartition
 rd_kafka_event_topic_partition(rd_kafka_event_t *rkev)
 
 rd_kafka_event_t *

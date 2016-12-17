@@ -6,45 +6,26 @@ use RdKafka;
 
 use Test::More tests => 28;
 
-sub test_list {
-    my ($list, $expected_allocated_size) = @_;
-
-    ok(ref($list), "topic_partition_list_new returns a ref");
-    my $expected_class = 'rd_kafka_topic_partition_list_tPtr';
-    ok(ref($list) eq $expected_class, "topic_partition_list_new ref isa '$expected_class'");
-
-    # testing list struct accessors
-    my $num_elements = $list->cnt;
-    is($num_elements, 0, "cnt says there are no elements");
-
-    # seems to allocate double the number to topic_partiion_list_new
-    my $allocated_size = $list->size;
-    ok($allocated_size >= $expected_allocated_size, "size has at least the expected allocated size ($expected_allocated_size)");
-
-    my $element_aref = $list->elems;
-    is(scalar(@$element_aref), 0, "elems has no elements");
-}
-
 {
     my $expected_allocated_size = 5;
 
-    # returns an rd_kafka_topic_partition_list_tPtr object (struct)
+    # returns an RdKafka::TopicPartition object (struct)
     my $list = RdKafka::topic_partition_list_new($expected_allocated_size);
     test_list($list, $expected_allocated_size);
 }
 # DESTROY is called implicitly on $list here
 # and calls rd_kafka_topic_partition_list_destroy
-# (see rd_kafka_topic_partition_list_tPtr in RdKafka.xs)
+# (see RdKafka::TopicPartition in RdKafka.xs)
 
 {
     my $list = RdKafka::topic_partition_list_new(5);
 
-    # returns an rd_kafka_topic_partition_tPtr object (struct)
+    # returns an RdKafka::TopicPartition object (struct)
     my $expected_topic = "test topic";
     my $expected_partition = 0;
     my $toppar = RdKafka::topic_partition_list_add($list, $expected_topic, $expected_partition);
     ok(ref($toppar), "topic_partition_list_add returned a ref");
-    my $expected_class = 'rd_kafka_topic_partition_tPtr';
+    my $expected_class = 'RdKafka::TopicPartition';
     is(ref($toppar), $expected_class, "topic_partition_list_add ref isa '$expected_class'");
 
     # testing topic-partition struct accessors
@@ -122,7 +103,7 @@ sub test_list {
 {
     my $list = RdKafka::topic_partition_list_new(5);
 
-    # returns an rd_kafka_topic_partition_tPtr object (struct)
+    # returns an RdKafka::TopicPartition object (struct)
     my $toppar = RdKafka::topic_partition_list_add($list, "test topic 1", 0);
 
     my $expected_topic = "test topic 2";
@@ -137,4 +118,23 @@ sub test_list {
     is($toppar_found->metadata_size, 0, "metadata_size is 0");
     my $expected_err = RdKafka::RD_KAFKA_RESP_ERR_NO_ERROR;
     is($toppar_found->err, $expected_err, "err is no error ($expected_err)");
+}
+
+sub test_list {
+    my ($list, $expected_allocated_size) = @_;
+
+    ok(ref($list), "topic_partition_list_new returns a ref");
+    my $expected_class = 'rd_kafka_topic_partition_list_tPtr';
+    ok(ref($list) eq $expected_class, "topic_partition_list_new ref isa '$expected_class'");
+
+    # testing list struct accessors
+    my $num_elements = $list->cnt;
+    is($num_elements, 0, "cnt says there are no elements");
+
+    # seems to allocate double the number to topic_partiion_list_new
+    my $allocated_size = $list->size;
+    ok($allocated_size >= $expected_allocated_size, "size has at least the expected allocated size ($expected_allocated_size)");
+
+    my $element_aref = $list->elems;
+    is(scalar(@$element_aref), 0, "elems has no elements");
 }
