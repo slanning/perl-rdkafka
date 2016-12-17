@@ -20,6 +20,18 @@ typedef rd_kafka_topic_conf_t *RdKafka__TopicConf;
 typedef rd_kafka_topic_t *RdKafka__Topic;
 typedef rd_kafka_t *RdKafka;
 
+typedef rd_kafka_metadata_broker_t *RdKafka__MetadataBroker;
+typedef rd_kafka_metadata_partition_t *RdKafka__MetadataPartition;
+typedef rd_kafka_metadata_topic_t *RdKafka__MetadataTopic;
+typedef rd_kafka_metadata_t *RdKafka__Metadata;
+typedef struct rd_kafka_group_member_t *RdKafka__GroupMember;
+typedef struct rd_kafka_group_info_t *RdKafka__GroupInfo;
+typedef struct rd_kafka_group_list_t *RdKafka__GroupList;
+#if RD_KAFKA_VERSION >= 0x000902ff
+typedef rd_kafka_event_t *RdKafka__Event;
+#endif
+typedef rd_kafka_queue_t *RdKafka__Queue;
+
 
 /* make this a compile flag? */
 #define PERL_RDKAFKA_DEBUG 1
@@ -413,29 +425,26 @@ rd_kafka_mem_free(RdKafka rk, void *ptr)
 ### QUEUE API
 
 #  "See rd_kafka_consume_start_queue(), rd_kafka_consume_queue(), et.al."
-rd_kafka_queue_t *
+RdKafka::Queue
 rd_kafka_queue_new(RdKafka rk)
-
-void
-rd_kafka_queue_destroy(rd_kafka_queue_t *rkqu)
 
 ## TODO - after 0.9.2 installed
 #if RD_KAFKA_VERSION >= 0x000902ff
 
-rd_kafka_queue_t *
+RdKafka::Queue
 rd_kafka_queue_get_main(RdKafka rk)
 
-rd_kafka_queue_t *
+RdKafka::Queue
 rd_kafka_queue_get_consumer(RdKafka rk)
 
 void
-rd_kafka_queue_forward(rd_kafka_queue_t *src, rd_kafka_queue_t *dst)
+rd_kafka_queue_forward(RdKafka::Queue src, RdKafka::Queue dst)
 
 size_t
-rd_kafka_queue_length(rd_kafka_queue_t *rkqu)
+rd_kafka_queue_length(RdKafka::Queue rkqu)
 
 void
-rd_kafka_queue_io_event_enable(rd_kafka_queue_t *rkqu, int fd, const void *payload, size_t size)
+rd_kafka_queue_io_event_enable(RdKafka::Queue rkqu, int fd, const void *payload, size_t size)
 
 #endif   /* RD_KAFKA_VERSION >= 0x000902ff */
 
@@ -643,7 +652,7 @@ MODULE = RdKafka    PACKAGE = RdKafka::Message    PREFIX = rd_kafka_
 ##                                 *   have this field set, otherwise 0. */
 
 
-MODULE = RdKafka    PACKAGE = rd_kafka_conf_tPtr    PREFIX = rd_kafka_
+MODULE = RdKafka    PACKAGE = RdKafka::Conf    PREFIX = rd_kafka_
 
 ## rd_kafka_new destroys the conf, so can't call rd_kafka_conf_destroy.
 ## Not sure how to deal with that now.
@@ -679,17 +688,6 @@ rd_kafka_DESTROY(RdKafka rk)
     rd_kafka_destroy(rk);  /* should do this? */
 
 
-MODULE = RdKafka    PACKAGE = rd_kafka_queue_tPtr    PREFIX = rd_kafka_
-
-void
-rd_kafka_DESTROY(rd_kafka_queue_t *rkq)
-  CODE:
-#ifdef PERL_RDKAFKA_DEBUG
-    printf("DESTROY rd_kafka_queue_tPtr\n");
-#endif
-    rd_kafka_queue_destroy(rkq);
-
-
 MODULE = RdKafka    PACKAGE = RdKafka::Topic    PREFIX = rd_kafka_
 
 void
@@ -699,6 +697,27 @@ rd_kafka_DESTROY(RdKafka::Topic rkt)
     printf("DESTROY RdKafka::Topic\n");
 #endif
     rd_kafka_topic_destroy(rkt);
+
+
+MODULE = RdKafka    PACKAGE = RdKafka::GroupMember    PREFIX = rd_kafka_
+
+MODULE = RdKafka    PACKAGE = RdKafka::GroupInfo    PREFIX = rd_kafka_
+
+MODULE = RdKafka    PACKAGE = RdKafka::GroupList    PREFIX = rd_kafka_
+
+MODULE = RdKafka    PACKAGE = RdKafka::Event    PREFIX = rd_kafka_
+
+MODULE = RdKafka    PACKAGE = RdKafka::Queue    PREFIX = rd_kafka_
+
+void
+rd_kafka_DESTROY(RdKafka::Queue rkq)
+  CODE:
+#ifdef PERL_RDKAFKA_DEBUG
+    printf("DESTROY RdKafka::Queue\n");
+#endif
+    rd_kafka_queue_destroy(rkq);
+
+
 
 
 ## why can there not be empty lines in BOOT now??

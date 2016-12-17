@@ -11,6 +11,6 @@ use Test::More tests => 2;
 
     my $queue = RdKafka::queue_new($rk);
     ok(ref($queue), "new returns a ref");
-    my $expected_class = 'rd_kafka_queue_tPtr';
+    my $expected_class = 'RdKafka::Queue';
     is(ref($queue), $expected_class, "new ref isa '$expected_class'");
 }

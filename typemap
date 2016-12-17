@@ -31,16 +31,16 @@ const RdKafka::Conf T_PTROBJ
 RdKafka::TopicConf T_PTROBJ
 const RdKafka::TopicConf T_PTROBJ
 
-rd_kafka_metadata_broker_t T_PTROBJ
-rd_kafka_metadata_partition_t T_PTROBJ
-rd_kafka_metadata_topic_t T_PTROBJ
-rd_kafka_metadata_t T_PTROBJ
-rd_kafka_group_member_info T_PTROBJ
-rd_kafka_group_info T_PTROBJ
-rd_kafka_group_list T_PTROBJ
-rd_kafka_event_t T_PTROBJ
+RdKafka::Metadata::Partition T_PTROBJ
+RdKafka::Metadata::Topic T_PTROBJ
+RdKafka::Metadata T_PTROBJ
 
-rd_kafka_queue_t * T_PTROBJ
+RdKafka::GroupMember T_PTROBJ
+RdKafka::GroupInfo T_PTROBJ
+RdKafka::GroupList T_PTROBJ
+
+RdKafka::Event T_PTROBJ
+RdKafka::Queue T_PTROBJ
 
 # lib/ExtUtils/typemap has "void * T_PTR";
 # not sure yet if that's what I should use here, though
