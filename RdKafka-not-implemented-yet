@@ -3,11 +3,11 @@
 ### PRODUCER API
 
 int
-rd_kafka_produce(rd_kafka_topic_t *rkt, int32_t partition, int msgflags, void *payload, size_t len, const void *key, size_t keylen, void *msg_opaque)
+rd_kafka_produce(RdKafka::Topic rkt, int32_t partition, int msgflags, void *payload, size_t len, const void *key, size_t keylen, void *msg_opaque)
 
 ## TODO: rkmessages should be an aref of RdKafka::Message
 int
-rd_kafka_produce_batch(rd_kafka_topic_t *rkt, int32_t partition, int msgflags, RdKafka::Message rkmessages, int message_cnt)
+rd_kafka_produce_batch(RdKafka::Topic rkt, int32_t partition, int msgflags, RdKafka::Message rkmessages, int message_cnt)
 
 #if RD_KAFKA_VERSION >= 0x000902ff
 
@@ -19,7 +19,7 @@ rd_kafka_flush(rd_kafka_t *rk, int timeout_ms)
 ### METADATA API
 
 rd_kafka_resp_err_t
-rd_kafka_metadata(rd_kafka_t *rk, int all_topics, rd_kafka_topic_t *only_rkt, const struct rd_kafka_metadata **metadatap, int timeout_ms)
+rd_kafka_metadata(rd_kafka_t *rk, int all_topics, RdKafka::Topic only_rkt, const struct rd_kafka_metadata **metadatap, int timeout_ms)
 
 void
 rd_kafka_metadata_destroy(const struct rd_kafka_metadata *metadata)

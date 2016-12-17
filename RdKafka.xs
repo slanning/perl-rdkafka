@@ -17,6 +17,7 @@ typedef rd_kafka_topic_partition_list_t *RdKafka__TopicPartitionList;
 typedef rd_kafka_message_t *RdKafka__Message;
 typedef rd_kafka_conf_t *RdKafka__Conf;
 typedef rd_kafka_topic_conf_t *RdKafka__TopicConf;
+typedef rd_kafka_topic_t *RdKafka__Topic;
 
 
 /* make this a compile flag? */
@@ -367,19 +368,15 @@ rd_kafka_memberid(rd_kafka_t *rk)
 ## * without updating the original handle's configuration.
 ## * Applications must eventually call rd_kafka_topic_destroy() for each
 ## * succesfull call to rd_kafka_topic_new() to clear up resources.
-rd_kafka_topic_t *
+RdKafka::Topic
 rd_kafka_topic_new(rd_kafka_t *rk, const char *topic, RdKafka::TopicConf conf)
 
-## TODO
-void
-rd_kafka_topic_destroy(rd_kafka_topic_t *rkt)
-
 const char *
-rd_kafka_topic_name(rd_kafka_topic_t *rkt)
+rd_kafka_topic_name(RdKafka::Topic rkt)
 #rd_kafka_topic_name(const rd_kafka_topic_t *rkt)
 
 void *
-rd_kafka_topic_opaque(rd_kafka_topic_t *rkt)
+rd_kafka_topic_opaque(RdKafka::Topic rkt)
 #rd_kafka_topic_opaque(const rd_kafka_topic_t *rkt)
 
 int
@@ -689,6 +686,16 @@ rd_kafka_DESTROY(rd_kafka_queue_t *rkq)
 #endif
     rd_kafka_queue_destroy(rkq);
 
+
+MODULE = RdKafka    PACKAGE = RdKafka::Topic    PREFIX = rd_kafka_
+
+void
+rd_kafka_DESTROY(RdKafka::Topic rkt)
+  CODE:
+#ifdef PERL_RDKAFKA_DEBUG
+    printf("DESTROY RdKafka::Topic\n");
+#endif
+    rd_kafka_topic_destroy(rkt);
 
 
 ## why can there not be empty lines in BOOT now??

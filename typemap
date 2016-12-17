@@ -11,16 +11,13 @@ rd_kafka_conf_res_t T_ENUM
 
 rd_kafka_err_desc T_PTROBJ
 
-## only ptrs should be here?
-
-#####rd_kafka_topic_partition_t * T_PTROBJ
 RdKafka::TopicPartition T_PTROBJ
-#####rd_kafka_topic_partition_list_t * T_PTROBJ
+
 RdKafka::TopicPartitionList T_PTROBJ
 const RdKafka::TopicPartitionList T_PTROBJ
 
-rd_kafka_topic_t * T_PTROBJ
-const rd_kafka_topic_t * T_PTROBJ
+RdKafka::Topic T_PTROBJ
+const RdKafka::Topic T_PTROBJ
 
 RdKafka::Message T_PTROBJ
 const RdKafka::Message T_PTROBJ
@@ -28,11 +25,9 @@ const RdKafka::Message T_PTROBJ
 rd_kafka_t * T_PTROBJ
 const rd_kafka_t * T_PTROBJ
 
-#####rd_kafka_conf_t * T_PTROBJ
 RdKafka::Conf T_PTROBJ
 const RdKafka::Conf T_PTROBJ
 
-#####rd_kafka_topic_conf_t * T_PTROBJ
 RdKafka::TopicConf T_PTROBJ
 const RdKafka::TopicConf T_PTROBJ
 
@@ -51,6 +46,7 @@ rd_kafka_queue_t * T_PTROBJ
 # not sure yet if that's what I should use here, though
 # (but this compiles, at least)
 const void * T_PTR
+
 
 ## Perl --> C
 
