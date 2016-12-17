@@ -90,7 +90,7 @@ use Test::More tests => 9;
 
 {
     my $list_size = 5;
-    my $partitions = RdKafka::topic_partition_list_new($list_size);
+    my $partitions = RdKafka::TopicPartitionList->new($list_size);
     my $conf = RdKafka::conf_new();
     my $rk = RdKafka::new(RD_KAFKA_PRODUCER, $conf);
 

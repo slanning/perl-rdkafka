@@ -10,7 +10,7 @@ use Test::More tests => 28;
     my $expected_allocated_size = 5;
 
     # returns an RdKafka::TopicPartition object (struct)
-    my $list = RdKafka::topic_partition_list_new($expected_allocated_size);
+    my $list = RdKafka::TopicPartitionList->new($expected_allocated_size);
     test_list($list, $expected_allocated_size);
 }
 # DESTROY is called implicitly on $list here
@@ -18,12 +18,12 @@ use Test::More tests => 28;
 # (see RdKafka::TopicPartition in RdKafka.xs)
 
 {
-    my $list = RdKafka::topic_partition_list_new(5);
+    my $list = RdKafka::TopicPartitionList->new(5);
 
     # returns an RdKafka::TopicPartition object (struct)
     my $expected_topic = "test topic";
     my $expected_partition = 0;
-    my $toppar = RdKafka::topic_partition_list_add($list, $expected_topic, $expected_partition);
+    my $toppar = $list->add($expected_topic, $expected_partition);
     ok(ref($toppar), "topic_partition_list_add returned a ref");
     my $expected_class = 'RdKafka::TopicPartition';
     is(ref($toppar), $expected_class, "topic_partition_list_add ref isa '$expected_class'");
@@ -39,9 +39,9 @@ use Test::More tests => 28;
 }
 
 {
-    my $list = RdKafka::topic_partition_list_new(5);
+    my $list = RdKafka::TopicPartitionList->new(5);
 
-    RdKafka::topic_partition_list_add_range($list, "Scott's test", 5, 7);
+    $list->add_range("Scott's test", 5, 7);
     ok(ref($list), "topic_partition_list_add_range list is still a ref");
     my $expected_class = 'RdKafka::TopicPartitionList';
     is(ref($list), $expected_class, "topic_partition_list_add_range ref isa '$expected_class'");
@@ -50,19 +50,19 @@ use Test::More tests => 28;
 }
 
 {
-    my $list = RdKafka::topic_partition_list_new(5);
+    my $list = RdKafka::TopicPartitionList->new(5);
 
     my $expected_topic = "test topic";
     my $expected_partition = 1;
-    my $toppar = RdKafka::topic_partition_list_add($list, $expected_topic, $expected_partition);
+    my $toppar = $list->add($expected_topic, $expected_partition);
     is($toppar->partition, $expected_partition, "partition is $expected_partition");
 
     # returns 1 if partition found+removed, 0 otherwise
-    my $found = RdKafka::topic_partition_list_del($list, $expected_topic . "98239an8br384gfj", $expected_partition);
+    my $found = $list->del($expected_topic . "98239an8br384gfj", $expected_partition);
     is($found, 0, "topic is not found");
-    $found = RdKafka::topic_partition_list_del($list, $expected_topic, $expected_partition + 10);
+    $found = $list->del($expected_topic, $expected_partition + 10);
     is($found, 0, "partition is not found");
-    $found = RdKafka::topic_partition_list_del($list, $expected_topic, $expected_partition);
+    $found = $list->del($expected_topic, $expected_partition);
     is($found, 1, "topic and partition are found, so topic deleted");
 }
 
@@ -77,10 +77,10 @@ use Test::More tests => 28;
 
 {
     my $expected_allocated_size = 5;
-    my $list = RdKafka::topic_partition_list_new($expected_allocated_size);
+    my $list = RdKafka::TopicPartitionList->new($expected_allocated_size);
 
     # what is this for? (needed in Perl?)
-    my $list_copy = RdKafka::topic_partition_list_copy($list);
+    my $list_copy = RdKafka::TopicPartitionList->copy($list);
 
     test_list($list, $expected_allocated_size);
 }
@@ -101,16 +101,16 @@ use Test::More tests => 28;
 }
 
 {
-    my $list = RdKafka::topic_partition_list_new(5);
+    my $list = RdKafka::TopicPartitionList->new(5);
 
     # returns an RdKafka::TopicPartition object (struct)
-    my $toppar = RdKafka::topic_partition_list_add($list, "test topic 1", 0);
+    my $toppar = $list->add("test topic 1", 0);
 
     my $expected_topic = "test topic 2";
     my $expected_partition = 0;
-    my $toppar2 = RdKafka::topic_partition_list_add($list, $expected_topic, $expected_partition);
+    my $toppar2 = $list->add($expected_topic, $expected_partition);
 
-    my $toppar_found = RdKafka::topic_partition_list_find($list, $expected_topic, $expected_partition);
+    my $toppar_found = $list->find($expected_topic, $expected_partition);
     is($toppar_found->topic, $expected_topic, "partition topic is '$expected_topic'");
     is($toppar_found->partition, $expected_partition, "partition is $expected_partition");
     my $offset = $toppar_found->offset;   # was -1001 for me (dunno why), also in a C test

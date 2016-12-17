@@ -118,47 +118,6 @@ int
 rd_kafka_errno()
 
 
-### TOPIC PARTITION
-
-#if RD_KAFKA_VERSION >= 0x000902ff
-
-## "This must not be called for elements in a topic partition list."
-## rd_kafka_event_topic_partition needs this to destroy its return value.
-void
-rd_kafka_topic_partition_destroy(RdKafka::TopicPartition rktpar)
-
-#endif
-
-RdKafka::TopicPartitionList
-rd_kafka_topic_partition_list_new(int size)
-
-## This is omitted; the Perl DESTROY will call it, in RdKafka::TopicPartitionList below
-## void
-## rd_kafka_topic_partition_list_destroy(RdKafka::TopicPartitionList rkparlist)
-
-RdKafka::TopicPartition
-rd_kafka_topic_partition_list_add(RdKafka::TopicPartitionList rktparlist, const char *topic, int32_t partition)
-
-void
-rd_kafka_topic_partition_list_add_range(RdKafka::TopicPartitionList rktparlist, const char *topic, int32_t start, int32_t stop)
-
-int
-rd_kafka_topic_partition_list_del(RdKafka::TopicPartitionList rktparlist, const char *topic, int32_t partition)
-
-int
-rd_kafka_topic_partition_list_del_by_idx(RdKafka::TopicPartitionList rktparlist, int idx)
-
-RdKafka::TopicPartitionList
-rd_kafka_topic_partition_list_copy(RdKafka::TopicPartitionList src)
-###rd_kafka_topic_partition_list_copy(const RdKafka::TopicPartitionList src)
-
-rd_kafka_resp_err_t
-rd_kafka_topic_partition_list_set_offset(RdKafka::TopicPartitionList rktparlist, const char *topic, int32_t partition, int64_t offset)
-
-RdKafka::TopicPartition
-rd_kafka_topic_partition_list_find(RdKafka::TopicPartitionList rktparlist, const char *topic, int32_t partition)
-
-
 ### MESSAGES
 
 void
@@ -506,18 +465,27 @@ rd_kafka_consumer_close(RdKafka rk)
 
 MODULE = RdKafka    PACKAGE = RdKafka::TopicPartition    PREFIX = rd_kafka_
 
-#ifdef PERL_RDKAFKA_DEBUG
+### TOPIC PARTITION
+
+#if RD_KAFKA_VERSION >= 0x000902ff
+
+## "This must not be called for elements in a topic partition list."
+## rd_kafka_event_topic_partition needs this to destroy its return value.
+void
+rd_kafka_topic_partition_destroy(RdKafka::TopicPartition rktpar)
+
+#endif
 
 void
 rd_kafka_DESTROY(RdKafka::TopicPartition toppar)
   CODE:
+#ifdef PERL_RDKAFKA_DEBUG
     printf("DESTROY RdKafka::TopicPartition\n");
+#endif
     /* I think this should not be done, (?)
        since rd_kafka_topic_partition_destroy should not be called
        on elements in a topic-partition list
        rd_kafka_topic_partition_destroy(toppar);  */
-
-#endif
 
 ## struct rd_kafka_topic_partition_t accessors: topic, partition, offset, [metadata,] metadata_size(?), [opaque,] err
 
@@ -575,10 +543,64 @@ rd_kafka_err(RdKafka::TopicPartition toppar)
     RETVAL
 
 
-MODULE = RdKafka    PACKAGE = RdKafka::TopicPartitionList    PREFIX = rd_kafka_
+MODULE = RdKafka    PACKAGE = RdKafka::TopicPartitionList
+
+RdKafka::TopicPartitionList
+new(char *package, int size)
+  CODE:
+    RETVAL = rd_kafka_topic_partition_list_new(size);
+  OUTPUT:
+    RETVAL
+
+RdKafka::TopicPartition
+add(RdKafka::TopicPartitionList rktparlist, const char *topic, int32_t partition)
+  CODE:
+    RETVAL = rd_kafka_topic_partition_list_add(rktparlist, topic, partition);
+  OUTPUT:
+    RETVAL
 
 void
-rd_kafka_DESTROY(RdKafka::TopicPartitionList list)
+add_range(RdKafka::TopicPartitionList rktparlist, const char *topic, int32_t start, int32_t stop)
+  CODE:
+    rd_kafka_topic_partition_list_add_range(rktparlist, topic, start, stop);
+
+int
+del(RdKafka::TopicPartitionList rktparlist, const char *topic, int32_t partition)
+  CODE:
+    RETVAL = rd_kafka_topic_partition_list_del(rktparlist, topic, partition);
+  OUTPUT:
+    RETVAL
+
+int
+del_by_idx(RdKafka::TopicPartitionList rktparlist, int idx)
+  CODE:
+    RETVAL = rd_kafka_topic_partition_list_del_by_idx(rktparlist, idx);
+  OUTPUT:
+    RETVAL
+
+RdKafka::TopicPartitionList
+copy(char *package, RdKafka::TopicPartitionList src)
+  CODE:
+    RETVAL = rd_kafka_topic_partition_list_copy(src);
+  OUTPUT:
+    RETVAL
+
+rd_kafka_resp_err_t
+set_offset(RdKafka::TopicPartitionList rktparlist, const char *topic, int32_t partition, int64_t offset)
+  CODE:
+    RETVAL = rd_kafka_topic_partition_list_set_offset(rktparlist, topic, partition, offset);
+  OUTPUT:
+    RETVAL
+
+RdKafka::TopicPartition
+find(RdKafka::TopicPartitionList rktparlist, const char *topic, int32_t partition)
+  CODE:
+    RETVAL = rd_kafka_topic_partition_list_find(rktparlist, topic, partition);
+  OUTPUT:
+    RETVAL
+
+void
+DESTROY(RdKafka::TopicPartitionList list)
   CODE:
 #ifdef PERL_RDKAFKA_DEBUG
     printf("DESTROY RdKafka::TopicPartitionList\n");
@@ -588,14 +610,14 @@ rd_kafka_DESTROY(RdKafka::TopicPartitionList list)
 ## struct rd_kafka_topic_partition_list_t accessors: cnt, size, elems
 
 int
-rd_kafka_cnt(RdKafka::TopicPartitionList list)
+cnt(RdKafka::TopicPartitionList list)
   CODE:
     RETVAL = list->cnt;
   OUTPUT:
     RETVAL
 
 int
-rd_kafka_size(RdKafka::TopicPartitionList list)
+size(RdKafka::TopicPartitionList list)
   CODE:
     RETVAL = list->size;
   OUTPUT:
@@ -604,7 +626,7 @@ rd_kafka_size(RdKafka::TopicPartitionList list)
 ## TODO: I don't think this is right
 ## I changed this from rd_kafka_topic_partition_t * to aref
 AV *
-rd_kafka_elems(RdKafka::TopicPartitionList list)
+elems(RdKafka::TopicPartitionList list)
   CODE:
     RdKafka__TopicPartition toppar;
     int cnt;
