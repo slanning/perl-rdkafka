@@ -13,6 +13,7 @@ extern "C" {
 
 
 typedef rd_kafka_topic_partition_t *RdKafka__TopicPartition;
+typedef rd_kafka_topic_partition_list_t *RdKafka__TopicPartitionList;
 
 
 /* make this a compile flag? */
@@ -111,34 +112,34 @@ rd_kafka_topic_partition_destroy(RdKafka::TopicPartition rktpar)
 
 #endif
 
-rd_kafka_topic_partition_list_t *
+RdKafka::TopicPartitionList
 rd_kafka_topic_partition_list_new(int size)
 
-## This is omitted; the Perl DESTROY will call it, in rd_kafka_topic_partition_list_tPtr below
+## This is omitted; the Perl DESTROY will call it, in RdKafka::TopicPartitionList below
 ## void
-## rd_kafka_topic_partition_list_destroy(rd_kafka_topic_partition_list_t *rkparlist)
+## rd_kafka_topic_partition_list_destroy(RdKafka::TopicPartitionList rkparlist)
 
 RdKafka::TopicPartition
-rd_kafka_topic_partition_list_add(rd_kafka_topic_partition_list_t *rktparlist, const char *topic, int32_t partition)
+rd_kafka_topic_partition_list_add(RdKafka::TopicPartitionList rktparlist, const char *topic, int32_t partition)
 
 void
-rd_kafka_topic_partition_list_add_range(rd_kafka_topic_partition_list_t *rktparlist, const char *topic, int32_t start, int32_t stop)
+rd_kafka_topic_partition_list_add_range(RdKafka::TopicPartitionList rktparlist, const char *topic, int32_t start, int32_t stop)
 
 int
-rd_kafka_topic_partition_list_del(rd_kafka_topic_partition_list_t *rktparlist, const char *topic, int32_t partition)
+rd_kafka_topic_partition_list_del(RdKafka::TopicPartitionList rktparlist, const char *topic, int32_t partition)
 
 int
-rd_kafka_topic_partition_list_del_by_idx(rd_kafka_topic_partition_list_t *rktparlist, int idx)
+rd_kafka_topic_partition_list_del_by_idx(RdKafka::TopicPartitionList rktparlist, int idx)
 
-rd_kafka_topic_partition_list_t *
-rd_kafka_topic_partition_list_copy(rd_kafka_topic_partition_list_t *src)
-###rd_kafka_topic_partition_list_copy(const rd_kafka_topic_partition_list_t *src)
+RdKafka::TopicPartitionList
+rd_kafka_topic_partition_list_copy(RdKafka::TopicPartitionList src)
+###rd_kafka_topic_partition_list_copy(const RdKafka::TopicPartitionList src)
 
 rd_kafka_resp_err_t
-rd_kafka_topic_partition_list_set_offset(rd_kafka_topic_partition_list_t *rktparlist, const char *topic, int32_t partition, int64_t offset)
+rd_kafka_topic_partition_list_set_offset(RdKafka::TopicPartitionList rktparlist, const char *topic, int32_t partition, int64_t offset)
 
 RdKafka::TopicPartition
-rd_kafka_topic_partition_list_find(rd_kafka_topic_partition_list_t *rktparlist, const char *topic, int32_t partition)
+rd_kafka_topic_partition_list_find(RdKafka::TopicPartitionList rktparlist, const char *topic, int32_t partition)
 
 
 ### MESSAGES
@@ -216,10 +217,10 @@ rd_kafka_conf_set(rd_kafka_conf_t *conf, const char *name, const char *value)
 ## rd_kafka_conf_set_consume_cb(rd_kafka_conf_t *conf, void (*consume_cb) (rd_kafka_message_t *rkmessage, void *opaque))
 ##
 ## void
-## rd_kafka_conf_set_rebalance_cb(rd_kafka_conf_t *conf, void (*rebalance_cb) (rd_kafka_t *rk, rd_kafka_resp_err_t err, rd_kafka_topic_partition_list_t *partitions, void *opaque))
+## rd_kafka_conf_set_rebalance_cb(rd_kafka_conf_t *conf, void (*rebalance_cb) (rd_kafka_t *rk, rd_kafka_resp_err_t err, RdKafka::TopicPartitionList partitions, void *opaque))
 ##
 ## void
-## rd_kafka_conf_set_offset_commit_cb(rd_kafka_conf_t *conf, void (*offset_commit_cb) (rd_kafka_t *rk, rd_kafka_resp_err_t err, rd_kafka_topic_partition_list_t *offsets, void *opaque))
+## rd_kafka_conf_set_offset_commit_cb(rd_kafka_conf_t *conf, void (*offset_commit_cb) (rd_kafka_t *rk, rd_kafka_resp_err_t err, RdKafka::TopicPartitionList offsets, void *opaque))
 ##
 ## void
 ## rd_kafka_conf_set_error_cb(rd_kafka_conf_t *conf, void (*error_cb) (rd_kafka_t *rk, int err, const char *reason, void *opaque))
@@ -386,10 +387,10 @@ void
 rd_kafka_yield(rd_kafka_t *rk)
 
 rd_kafka_resp_err_t
-rd_kafka_pause_partitions(rd_kafka_t *rk, rd_kafka_topic_partition_list_t *partitions)
+rd_kafka_pause_partitions(rd_kafka_t *rk, RdKafka::TopicPartitionList partitions)
 
 rd_kafka_resp_err_t
-rd_kafka_resume_partitions(rd_kafka_t *rk, rd_kafka_topic_partition_list_t *partitions)
+rd_kafka_resume_partitions(rd_kafka_t *rk, RdKafka::TopicPartitionList partitions)
 
 ## TODO: figure out how best to handle both return value (error) and the low/high IN_OUT params
 ## rd_kafka_resp_err_t
@@ -444,10 +445,10 @@ rd_kafka_queue_io_event_enable(rd_kafka_queue_t *rkqu, int fd, const void *paylo
 ### KAFKACONSUMER API
 
 ## TODO: deferred topic_partition_list ones until that is handled properly
-## (there needs to be state info stored in stored in rd_kafka_topic_partition_list_t *)
+## (there needs to be state info stored in stored in RdKafka::TopicPartitionList )
 
 ## rd_kafka_resp_err_t
-## rd_kafka_subscribe(rd_kafka_t *rk, const rd_kafka_topic_partition_list_t *topics)
+## rd_kafka_subscribe(rd_kafka_t *rk, const RdKafka::TopicPartitionList topics)
 
 rd_kafka_resp_err_t
 rd_kafka_unsubscribe(rd_kafka_t *rk)
@@ -462,13 +463,13 @@ rd_kafka_resp_err_t
 rd_kafka_consumer_close(rd_kafka_t *rk)
 
 ## rd_kafka_resp_err_t
-## rd_kafka_assign(rd_kafka_t *rk, const rd_kafka_topic_partition_list_t *partitions)
+## rd_kafka_assign(rd_kafka_t *rk, const RdKafka::TopicPartitionList partitions)
 
 ## rd_kafka_resp_err_t
 ## rd_kafka_assignment(rd_kafka_t *rk, rd_kafka_topic_partition_list_t **partitions)
 
 ## rd_kafka_resp_err_t
-## rd_kafka_commit(rd_kafka_t *rk, const rd_kafka_topic_partition_list_t *offsets, int async)
+## rd_kafka_commit(rd_kafka_t *rk, const RdKafka::TopicPartitionList offsets, int async)
 
 rd_kafka_resp_err_t
 rd_kafka_commit_message(rd_kafka_t *rk, const rd_kafka_message_t *rkmessage, int async)
@@ -476,15 +477,15 @@ rd_kafka_commit_message(rd_kafka_t *rk, const rd_kafka_message_t *rkmessage, int
 #if RD_KAFKA_VERSION >= 0x000902ff
 
 ## rd_kafka_resp_err_t
-## rd_kafka_commit_queue(rd_kafka_t *rk, const rd_kafka_topic_partition_list_t *offsets, rd_kafka_queue_t *rkqu, void (*cb) (rd_kafka_t *rk, rd_kafka_resp_err_t err, rd_kafka_topic_partition_list_t *offsets, void *opaque), void *opaque)
+## rd_kafka_commit_queue(rd_kafka_t *rk, const RdKafka::TopicPartitionList offsets, rd_kafka_queue_t *rkqu, void (*cb) (rd_kafka_t *rk, rd_kafka_resp_err_t err, RdKafka::TopicPartitionList offsets, void *opaque), void *opaque)
 
 #endif
 
 ## rd_kafka_resp_err_t
-## rd_kafka_committed(rd_kafka_t *rk, rd_kafka_topic_partition_list_t *partitions, int timeout_ms)
+## rd_kafka_committed(rd_kafka_t *rk, RdKafka::TopicPartitionList partitions, int timeout_ms)
 
 ## rd_kafka_resp_err_t
-## rd_kafka_position(rd_kafka_t *rk, rd_kafka_topic_partition_list_t *partitions)
+## rd_kafka_position(rd_kafka_t *rk, RdKafka::TopicPartitionList partitions)
 
 
 
@@ -563,27 +564,27 @@ rd_kafka_err(RdKafka::TopicPartition toppar)
     RETVAL
 
 
-MODULE = RdKafka    PACKAGE = rd_kafka_topic_partition_list_tPtr    PREFIX = rd_kafka_
+MODULE = RdKafka    PACKAGE = RdKafka::TopicPartitionList    PREFIX = rd_kafka_
 
 void
-rd_kafka_DESTROY(rd_kafka_topic_partition_list_t * list)
+rd_kafka_DESTROY(RdKafka::TopicPartitionList list)
   CODE:
 #ifdef PERL_RDKAFKA_DEBUG
-    printf("DESTROY rd_kafka_topic_partition_list_tPtr\n");
+    printf("DESTROY RdKafka::TopicPartitionList\n");
 #endif
     rd_kafka_topic_partition_list_destroy(list);
 
 ## struct rd_kafka_topic_partition_list_t accessors: cnt, size, elems
 
 int
-rd_kafka_cnt(rd_kafka_topic_partition_list_t *list)
+rd_kafka_cnt(RdKafka::TopicPartitionList list)
   CODE:
     RETVAL = list->cnt;
   OUTPUT:
     RETVAL
 
 int
-rd_kafka_size(rd_kafka_topic_partition_list_t *list)
+rd_kafka_size(RdKafka::TopicPartitionList list)
   CODE:
     RETVAL = list->size;
   OUTPUT:
@@ -592,7 +593,7 @@ rd_kafka_size(rd_kafka_topic_partition_list_t *list)
 ## TODO: I don't think this is right
 ## I changed this from rd_kafka_topic_partition_t * to aref
 AV *
-rd_kafka_elems(rd_kafka_topic_partition_list_t *list)
+rd_kafka_elems(RdKafka::TopicPartitionList list)
   CODE:
     RdKafka__TopicPartition toppar;
     int cnt;

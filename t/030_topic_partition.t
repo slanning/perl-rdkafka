@@ -43,7 +43,7 @@ use Test::More tests => 28;
 
     RdKafka::topic_partition_list_add_range($list, "Scott's test", 5, 7);
     ok(ref($list), "topic_partition_list_add_range list is still a ref");
-    my $expected_class = 'rd_kafka_topic_partition_list_tPtr';
+    my $expected_class = 'RdKafka::TopicPartitionList';
     is(ref($list), $expected_class, "topic_partition_list_add_range ref isa '$expected_class'");
 
     # how many partitions are there?
@@ -124,7 +124,7 @@ sub test_list {
     my ($list, $expected_allocated_size) = @_;
 
     ok(ref($list), "topic_partition_list_new returns a ref");
-    my $expected_class = 'rd_kafka_topic_partition_list_tPtr';
+    my $expected_class = 'RdKafka::TopicPartitionList';
     ok(ref($list) eq $expected_class, "topic_partition_list_new ref isa '$expected_class'");
 
     # testing list struct accessors

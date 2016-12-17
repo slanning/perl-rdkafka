@@ -15,9 +15,9 @@ rd_kafka_err_desc T_PTROBJ
 
 #####rd_kafka_topic_partition_t * T_PTROBJ
 RdKafka::TopicPartition T_PTROBJ
-rd_kafka_topic_partition_list_t T_PTROBJ
-rd_kafka_topic_partition_list_t * T_PTROBJ
-const rd_kafka_topic_partition_list_t * T_PTROBJ
+#####rd_kafka_topic_partition_list_t * T_PTROBJ
+RdKafka::TopicPartitionList T_PTROBJ
+const RdKafka::TopicPartitionList T_PTROBJ
 
 rd_kafka_topic_t * T_PTROBJ
 const rd_kafka_topic_t * T_PTROBJ
