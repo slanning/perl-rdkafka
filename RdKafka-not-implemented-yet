@@ -5,8 +5,9 @@
 int
 rd_kafka_produce(rd_kafka_topic_t *rkt, int32_t partition, int msgflags, void *payload, size_t len, const void *key, size_t keylen, void *msg_opaque)
 
+## TODO: rkmessages should be an aref of RdKafka::Message
 int
-rd_kafka_produce_batch(rd_kafka_topic_t *rkt, int32_t partition, int msgflags, rd_kafka_message_t *rkmessages, int message_cnt)
+rd_kafka_produce_batch(rd_kafka_topic_t *rkt, int32_t partition, int msgflags, RdKafka::Message rkmessages, int message_cnt)
 
 #if RD_KAFKA_VERSION >= 0x000902ff
 
@@ -84,11 +85,11 @@ rd_kafka_event_name(const rd_kafka_event_t *rkev)
 void
 rd_kafka_event_destroy(rd_kafka_event_t *rkev)
 
-const rd_kafka_message_t *
+const RdKafka::Message
 rd_kafka_event_message_next(rd_kafka_event_t *rkev)
 
-size_t
-rd_kafka_event_message_array(rd_kafka_event_t *rkev, const rd_kafka_message_t **rkmessages, size_t size)
+## size_t
+## rd_kafka_event_message_array(rd_kafka_event_t *rkev, const rd_kafka_message_t **rkmessages, size_t size)
 
 size_t
 rd_kafka_event_message_count(rd_kafka_event_t *rkev)

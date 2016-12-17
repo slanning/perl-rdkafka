@@ -14,6 +14,7 @@ extern "C" {
 
 typedef rd_kafka_topic_partition_t *RdKafka__TopicPartition;
 typedef rd_kafka_topic_partition_list_t *RdKafka__TopicPartitionList;
+typedef rd_kafka_message_t *RdKafka__Message;
 
 
 /* make this a compile flag? */
@@ -145,9 +146,9 @@ rd_kafka_topic_partition_list_find(RdKafka::TopicPartitionList rktparlist, const
 ### MESSAGES
 
 void
-rd_kafka_message_destroy(rd_kafka_message_t *rkmessage)
+rd_kafka_message_destroy(RdKafka::Message rkmessage)
 
-## TODO: maybe should do this in rd_kafka_message_tPtr
+## TODO: maybe should do this in RdKafka::Message
 ## static RD_INLINE const char *
 ## RD_UNUSED 
 ## rd_kafka_message_errstr(const rd_kafka_message_t *rkmessage) {
@@ -155,10 +156,10 @@ rd_kafka_message_destroy(rd_kafka_message_t *rkmessage)
 ## static const char *
 ## rd_kafka_message_errstr(const rd_kafka_message_t *rkmessage)
 
-## TODO: maybe should do this in rd_kafka_message_tPtr
+## TODO: maybe should do this in RdKafka::Message
 ## (tstype is a pointer, meant as a 2nd return value)
-int64_t
-rd_kafka_message_timestamp(const rd_kafka_message_t *rkmessage, OUT rd_kafka_timestamp_type_t tstype)
+## int64_t
+## rd_kafka_message_timestamp(const RdKafka::Message rkmessage, OUT rd_kafka_timestamp_type_t tstype)
 
 
 ### CONFIGURATION
@@ -211,10 +212,10 @@ rd_kafka_conf_set(rd_kafka_conf_t *conf, const char *name, const char *value)
 ## callbacks - these will need special handling like
 ## PerlOGRECallback.{c,h} , PerlOGRECallbackManager.{c.h}
 ## void
-## rd_kafka_conf_set_dr_msg_cb(rd_kafka_conf_t *conf, void (*dr_msg_cb) (rd_kafka_t *rk, const rd_kafka_message_t *rkmessage, void *opaque))
+## rd_kafka_conf_set_dr_msg_cb(rd_kafka_conf_t *conf, void (*dr_msg_cb) (rd_kafka_t *rk, const RdKafka::Message rkmessage, void *opaque))
 ##
 ## void
-## rd_kafka_conf_set_consume_cb(rd_kafka_conf_t *conf, void (*consume_cb) (rd_kafka_message_t *rkmessage, void *opaque))
+## rd_kafka_conf_set_consume_cb(rd_kafka_conf_t *conf, void (*consume_cb) (RdKafka::Message rkmessage, void *opaque))
 ##
 ## void
 ## rd_kafka_conf_set_rebalance_cb(rd_kafka_conf_t *conf, void (*rebalance_cb) (rd_kafka_t *rk, rd_kafka_resp_err_t err, RdKafka::TopicPartitionList partitions, void *opaque))
@@ -456,7 +457,7 @@ rd_kafka_unsubscribe(rd_kafka_t *rk)
 ## rd_kafka_resp_err_t
 ## rd_kafka_subscription(rd_kafka_t *rk, rd_kafka_topic_partition_list_t **topics)
 
-rd_kafka_message_t *
+RdKafka::Message
 rd_kafka_consumer_poll(rd_kafka_t *rk, int timeout_ms)
 
 rd_kafka_resp_err_t
@@ -471,8 +472,8 @@ rd_kafka_consumer_close(rd_kafka_t *rk)
 ## rd_kafka_resp_err_t
 ## rd_kafka_commit(rd_kafka_t *rk, const RdKafka::TopicPartitionList offsets, int async)
 
-rd_kafka_resp_err_t
-rd_kafka_commit_message(rd_kafka_t *rk, const rd_kafka_message_t *rkmessage, int async)
+## rd_kafka_resp_err_t
+## rd_kafka_commit_message(rd_kafka_t *rk, const RdKafka::Message rkmessage, int async)
 
 #if RD_KAFKA_VERSION >= 0x000902ff
 
@@ -613,7 +614,7 @@ rd_kafka_elems(RdKafka::TopicPartitionList list)
     RETVAL
 
 
-MODULE = RdKafka    PACKAGE = rd_kafka_message_tPtr    PREFIX = rd_kafka_
+MODULE = RdKafka    PACKAGE = RdKafka::Message    PREFIX = rd_kafka_
 
 ## rd_kafka_resp_err_t err;   /**< Non-zero for error signaling. */
 ## rd_kafka_topic_t *rkt;     /**< Topic */
