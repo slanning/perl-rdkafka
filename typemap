@@ -22,8 +22,8 @@ const RdKafka::Topic T_PTROBJ
 RdKafka::Message T_PTROBJ
 const RdKafka::Message T_PTROBJ
 
-rd_kafka_t * T_PTROBJ
-const rd_kafka_t * T_PTROBJ
+RdKafka T_PTROBJ
+const RdKafka T_PTROBJ
 
 RdKafka::Conf T_PTROBJ
 const RdKafka::Conf T_PTROBJ

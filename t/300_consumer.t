@@ -4,7 +4,7 @@ use warnings;
 use RdKafka;
 
 use Test::More tests => 1;
-ok(1,1);
+ok(1,"a");
 
 ## TODO: all the topic_partition_list-related ones are skipped for now
 

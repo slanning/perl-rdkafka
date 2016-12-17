@@ -12,14 +12,14 @@ rd_kafka_produce_batch(RdKafka::Topic rkt, int32_t partition, int msgflags, RdKa
 #if RD_KAFKA_VERSION >= 0x000902ff
 
 rd_kafka_resp_err_t
-rd_kafka_flush(rd_kafka_t *rk, int timeout_ms)
+rd_kafka_flush(RdKafka rk, int timeout_ms)
 
 #endif
 
 ### METADATA API
 
 rd_kafka_resp_err_t
-rd_kafka_metadata(rd_kafka_t *rk, int all_topics, RdKafka::Topic only_rkt, const struct rd_kafka_metadata **metadatap, int timeout_ms)
+rd_kafka_metadata(RdKafka rk, int all_topics, RdKafka::Topic only_rkt, const struct rd_kafka_metadata **metadatap, int timeout_ms)
 
 void
 rd_kafka_metadata_destroy(const struct rd_kafka_metadata *metadata)
@@ -28,7 +28,7 @@ rd_kafka_metadata_destroy(const struct rd_kafka_metadata *metadata)
 ### CLIENT GROUP INFORMATION
 
 rd_kafka_resp_err_t
-rd_kafka_list_groups(rd_kafka_t *rk, const char *group, const struct rd_kafka_group_list **grplistp, int timeout_ms)
+rd_kafka_list_groups(RdKafka rk, const char *group, const struct rd_kafka_group_list **grplistp, int timeout_ms)
 
 void
 rd_kafka_group_list_destroy(const struct rd_kafka_group_list *grplist)
@@ -37,27 +37,27 @@ rd_kafka_group_list_destroy(const struct rd_kafka_group_list *grplist)
 ### MISCELLANEOUS
 
 int
-rd_kafka_brokers_add(rd_kafka_t *rk, const char *brokerlist)
+rd_kafka_brokers_add(RdKafka rk, const char *brokerlist)
 
 # RD_EXPORT RD_DEPRECATED
-# void rd_kafka_set_logger(rd_kafka_t *rk,
+# void rd_kafka_set_logger(RdKafka rk,
 #			  void (*func) (const rd_kafka_t *rk, int level,
 #					const char *fac, const char *buf));
 
 void
-rd_kafka_set_log_level(rd_kafka_t *rk, int level)
+rd_kafka_set_log_level(RdKafka rk, int level)
 
 void
-rd_kafka_log_print(const rd_kafka_t *rk, int level, const char *fac, const char *buf)
+rd_kafka_log_print(const RdKafka rk, int level, const char *fac, const char *buf)
 
 void
-rd_kafka_log_syslog(const rd_kafka_t *rk, int level, const char *fac, const char *buf)
+rd_kafka_log_syslog(const RdKafka rk, int level, const char *fac, const char *buf)
 
 int
-rd_kafka_outq_len(rd_kafka_t *rk)
+rd_kafka_outq_len(RdKafka rk)
 
 void
-rd_kafka_dump(FILE *fp, rd_kafka_t *rk)
+rd_kafka_dump(FILE *fp, RdKafka rk)
 
 int
 rd_kafka_thread_cnt()
@@ -69,7 +69,7 @@ rd_kafka_wait_destroyed(int timeout_ms)
 ### EXPERIMENTAL API
 
 rd_kafka_resp_err_t
-rd_kafka_poll_set_consumer(rd_kafka_t *rk)
+rd_kafka_poll_set_consumer(RdKafka rk)
 
 
 ### EVENTS INTERFACE

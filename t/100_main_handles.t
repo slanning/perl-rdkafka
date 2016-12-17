@@ -15,7 +15,7 @@ use Test::More tests => 9;
     my $rk = RdKafka::new(RD_KAFKA_CONSUMER, $conf);
 
     ok(ref($rk), "new returns a ref");
-    my $expected_class = 'rd_kafka_tPtr';
+    my $expected_class = 'RdKafka';
     is(ref($rk), $expected_class, "new ref isa '$expected_class'");
 }
 ## how do I make new give an error?

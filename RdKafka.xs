@@ -18,6 +18,7 @@ typedef rd_kafka_message_t *RdKafka__Message;
 typedef rd_kafka_conf_t *RdKafka__Conf;
 typedef rd_kafka_topic_conf_t *RdKafka__TopicConf;
 typedef rd_kafka_topic_t *RdKafka__Topic;
+typedef rd_kafka_t *RdKafka;
 
 
 /* make this a compile flag? */
@@ -259,7 +260,8 @@ void
 rd_kafka_conf_set_opaque(RdKafka::Conf conf, void *opaque)
 
 void *
-rd_kafka_opaque(const rd_kafka_t *rk)
+rd_kafka_opaque(RdKafka rk)
+## rd_kafka_opaque(const rd_kafka_t *rk)
 
 void
 rd_kafka_conf_set_default_topic_conf(RdKafka::Conf conf, RdKafka::TopicConf tconf)
@@ -330,7 +332,7 @@ rd_kafka_topic_conf_dup(RdKafka::TopicConf conf)
 ## and this will croak if there's an error from rd_kafka_new.
 ## I'd like to allow conf to be optional and errstr to hold an error,
 ## but I haven't figured out how to do that.
-rd_kafka_t *
+RdKafka 
 rd_kafka_new(rd_kafka_type_t type, RdKafka::Conf conf)
   PREINIT:
     char buf[PERL_RDKAFKA_DEFAULT_ERRSTR_SIZE];
@@ -347,13 +349,13 @@ rd_kafka_new(rd_kafka_type_t type, RdKafka::Conf conf)
 ## rd_kafka_destroy(rd_kafka_t *rk)
 
 const char *
-rd_kafka_name(rd_kafka_t *rk)
+rd_kafka_name(RdKafka rk)
 #rd_kafka_name(const rd_kafka_t *rk)
 
 ## TODO
 ## see rd_kafka_mem_free
 char *
-rd_kafka_memberid(rd_kafka_t *rk)
+rd_kafka_memberid(RdKafka rk)
 #rd_kafka_memberid(const rd_kafka_t *rk)
 
 ## * \p conf is an optional configuration for the topic created with
@@ -369,7 +371,7 @@ rd_kafka_memberid(rd_kafka_t *rk)
 ## * Applications must eventually call rd_kafka_topic_destroy() for each
 ## * succesfull call to rd_kafka_topic_new() to clear up resources.
 RdKafka::Topic
-rd_kafka_topic_new(rd_kafka_t *rk, const char *topic, RdKafka::TopicConf conf)
+rd_kafka_topic_new(RdKafka rk, const char *topic, RdKafka::TopicConf conf)
 
 const char *
 rd_kafka_topic_name(RdKafka::Topic rkt)
@@ -380,24 +382,24 @@ rd_kafka_topic_opaque(RdKafka::Topic rkt)
 #rd_kafka_topic_opaque(const rd_kafka_topic_t *rkt)
 
 int
-rd_kafka_poll(rd_kafka_t *rk, int timeout_ms)
+rd_kafka_poll(RdKafka rk, int timeout_ms)
 
 ## TODO: tests once callbacks are implemented
 void
-rd_kafka_yield(rd_kafka_t *rk)
+rd_kafka_yield(RdKafka rk)
 
 rd_kafka_resp_err_t
-rd_kafka_pause_partitions(rd_kafka_t *rk, RdKafka::TopicPartitionList partitions)
+rd_kafka_pause_partitions(RdKafka rk, RdKafka::TopicPartitionList partitions)
 
 rd_kafka_resp_err_t
-rd_kafka_resume_partitions(rd_kafka_t *rk, RdKafka::TopicPartitionList partitions)
+rd_kafka_resume_partitions(RdKafka rk, RdKafka::TopicPartitionList partitions)
 
 ## TODO: figure out how best to handle both return value (error) and the low/high IN_OUT params
 ## rd_kafka_resp_err_t
-## rd_kafka_query_watermark_offsets(rd_kafka_t *rk, const char *topic, int32_t partition, int64_t *low, int64_t *high, int timeout_ms)
+## rd_kafka_query_watermark_offsets(RdKafka rk, const char *topic, int32_t partition, int64_t *low, int64_t *high, int timeout_ms)
 ##
 ## rd_kafka_resp_err_t
-## rd_kafka_get_watermark_offsets(rd_kafka_t *rk, const char *topic, int32_t partition, int64_t *low, int64_t *high)
+## rd_kafka_get_watermark_offsets(RdKafka rk, const char *topic, int32_t partition, int64_t *low, int64_t *high)
 
 # leave this out?
 # "rd_kafka_mem_free() must only be used for pointers returned by APIs
@@ -405,14 +407,14 @@ rd_kafka_resume_partitions(rd_kafka_t *rk, RdKafka::TopicPartitionList partition
 # in particular, rd_kafka_memberid needs it,
 # but can probably do it when the SV* holding the string goes out of scope
 void
-rd_kafka_mem_free(rd_kafka_t *rk, void *ptr)
+rd_kafka_mem_free(RdKafka rk, void *ptr)
 
 
 ### QUEUE API
 
 #  "See rd_kafka_consume_start_queue(), rd_kafka_consume_queue(), et.al."
 rd_kafka_queue_t *
-rd_kafka_queue_new(rd_kafka_t *rk)
+rd_kafka_queue_new(RdKafka rk)
 
 void
 rd_kafka_queue_destroy(rd_kafka_queue_t *rkqu)
@@ -421,10 +423,10 @@ rd_kafka_queue_destroy(rd_kafka_queue_t *rkqu)
 #if RD_KAFKA_VERSION >= 0x000902ff
 
 rd_kafka_queue_t *
-rd_kafka_queue_get_main(rd_kafka_t *rk)
+rd_kafka_queue_get_main(RdKafka rk)
 
 rd_kafka_queue_t *
-rd_kafka_queue_get_consumer(rd_kafka_t *rk)
+rd_kafka_queue_get_consumer(RdKafka rk)
 
 void
 rd_kafka_queue_forward(rd_kafka_queue_t *src, rd_kafka_queue_t *dst)
@@ -448,44 +450,44 @@ rd_kafka_queue_io_event_enable(rd_kafka_queue_t *rkqu, int fd, const void *paylo
 ## (there needs to be state info stored in stored in RdKafka::TopicPartitionList )
 
 ## rd_kafka_resp_err_t
-## rd_kafka_subscribe(rd_kafka_t *rk, const RdKafka::TopicPartitionList topics)
+## rd_kafka_subscribe(RdKafka rk, const RdKafka::TopicPartitionList topics)
 
 rd_kafka_resp_err_t
-rd_kafka_unsubscribe(rd_kafka_t *rk)
+rd_kafka_unsubscribe(RdKafka rk)
 
 ## rd_kafka_resp_err_t
-## rd_kafka_subscription(rd_kafka_t *rk, rd_kafka_topic_partition_list_t **topics)
+## rd_kafka_subscription(RdKafka rk, rd_kafka_topic_partition_list_t **topics)
 
 RdKafka::Message
-rd_kafka_consumer_poll(rd_kafka_t *rk, int timeout_ms)
+rd_kafka_consumer_poll(RdKafka rk, int timeout_ms)
 
 rd_kafka_resp_err_t
-rd_kafka_consumer_close(rd_kafka_t *rk)
+rd_kafka_consumer_close(RdKafka rk)
 
 ## rd_kafka_resp_err_t
-## rd_kafka_assign(rd_kafka_t *rk, const RdKafka::TopicPartitionList partitions)
+## rd_kafka_assign(RdKafka rk, const RdKafka::TopicPartitionList partitions)
 
 ## rd_kafka_resp_err_t
-## rd_kafka_assignment(rd_kafka_t *rk, rd_kafka_topic_partition_list_t **partitions)
+## rd_kafka_assignment(RdKafka rk, rd_kafka_topic_partition_list_t **partitions)
 
 ## rd_kafka_resp_err_t
-## rd_kafka_commit(rd_kafka_t *rk, const RdKafka::TopicPartitionList offsets, int async)
+## rd_kafka_commit(RdKafka rk, const RdKafka::TopicPartitionList offsets, int async)
 
 ## rd_kafka_resp_err_t
-## rd_kafka_commit_message(rd_kafka_t *rk, const RdKafka::Message rkmessage, int async)
+## rd_kafka_commit_message(RdKafka rk, const RdKafka::Message rkmessage, int async)
 
 #if RD_KAFKA_VERSION >= 0x000902ff
 
 ## rd_kafka_resp_err_t
-## rd_kafka_commit_queue(rd_kafka_t *rk, const RdKafka::TopicPartitionList offsets, rd_kafka_queue_t *rkqu, void (*cb) (rd_kafka_t *rk, rd_kafka_resp_err_t err, RdKafka::TopicPartitionList offsets, void *opaque), void *opaque)
+## rd_kafka_commit_queue(RdKafka rk, const RdKafka::TopicPartitionList offsets, rd_kafka_queue_t *rkqu, void (*cb) (rd_kafka_t *rk, rd_kafka_resp_err_t err, RdKafka::TopicPartitionList offsets, void *opaque), void *opaque)
 
 #endif
 
 ## rd_kafka_resp_err_t
-## rd_kafka_committed(rd_kafka_t *rk, RdKafka::TopicPartitionList partitions, int timeout_ms)
+## rd_kafka_committed(RdKafka rk, RdKafka::TopicPartitionList partitions, int timeout_ms)
 
 ## rd_kafka_resp_err_t
-## rd_kafka_position(rd_kafka_t *rk, RdKafka::TopicPartitionList partitions)
+## rd_kafka_position(RdKafka rk, RdKafka::TopicPartitionList partitions)
 
 
 
@@ -665,13 +667,14 @@ rd_kafka_DESTROY(RdKafka::TopicConf topic_conf)
     /* rd_kafka_topic_conf_destroy(topic_conf); */
 
 
-MODULE = RdKafka    PACKAGE = rd_kafka_tPtr    PREFIX = rd_kafka_
+### dupe PACKAGE name
+MODULE = RdKafka    PACKAGE = RdKafka    PREFIX = rd_kafka_
 
 void
-rd_kafka_DESTROY(rd_kafka_t *rk)
+rd_kafka_DESTROY(RdKafka rk)
   CODE:
 #ifdef PERL_RDKAFKA_DEBUG
-    printf("DESTROY rd_kafka_tPtr\n");
+    printf("DESTROY RdKafka\n");
 #endif
     rd_kafka_destroy(rk);  /* should do this? */
 
