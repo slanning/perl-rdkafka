@@ -11,7 +11,7 @@ use Test::More tests => 9;
 ## I'd like to allow conf to be optional and errstr to hold an error,
 ## but I haven't figured out how to do that.
 {
-    my $conf = RdKafka::conf_new();
+    my $conf = RdKafka::Conf->new();
     my $rk = RdKafka::new(RD_KAFKA_CONSUMER, $conf);
 
     ok(ref($rk), "new returns a ref");
@@ -21,7 +21,7 @@ use Test::More tests => 9;
 ## how do I make new give an error?
 
 {
-    my $conf = RdKafka::conf_new();
+    my $conf = RdKafka::Conf->new();
     my $rk = RdKafka::new(RD_KAFKA_PRODUCER, $conf);
     my $name = RdKafka::name($rk);
     # for me it was: rdkafka#producer-2
@@ -29,7 +29,7 @@ use Test::More tests => 9;
 }
 
 {
-    my $conf = RdKafka::conf_new();
+    my $conf = RdKafka::Conf->new();
     my $rk = RdKafka::new(RD_KAFKA_PRODUCER, $conf);
     my $memberid = RdKafka::memberid($rk);
     ok(!defined($memberid), "memberid isn't available...");
@@ -40,7 +40,7 @@ use Test::More tests => 9;
 }
 
 {
-    my $conf = RdKafka::conf_new();
+    my $conf = RdKafka::Conf->new();
     my $rk = RdKafka::new(RD_KAFKA_PRODUCER, $conf);
 
     my $topic_conf = RdKafka::topic_conf_new();
@@ -50,7 +50,7 @@ use Test::More tests => 9;
 }
 
 {
-    my $conf = RdKafka::conf_new();
+    my $conf = RdKafka::Conf->new();
     my $rk = RdKafka::new(RD_KAFKA_PRODUCER, $conf);
 
     my $topic_conf = RdKafka::topic_conf_new();
@@ -65,7 +65,7 @@ use Test::More tests => 9;
 }
 
 {
-    my $conf = RdKafka::conf_new();
+    my $conf = RdKafka::Conf->new();
     my $rk = RdKafka::new(RD_KAFKA_PRODUCER, $conf);
 
     my $topic_conf = RdKafka::topic_conf_new();
@@ -81,7 +81,7 @@ use Test::More tests => 9;
 }
 
 {
-    my $conf = RdKafka::conf_new();
+    my $conf = RdKafka::Conf->new();
     my $rk = RdKafka::new(RD_KAFKA_PRODUCER, $conf);
 
     my $num_events = RdKafka::poll($rk, 10);
@@ -91,7 +91,7 @@ use Test::More tests => 9;
 {
     my $list_size = 5;
     my $partitions = RdKafka::TopicPartitionList->new($list_size);
-    my $conf = RdKafka::conf_new();
+    my $conf = RdKafka::Conf->new();
     my $rk = RdKafka::new(RD_KAFKA_PRODUCER, $conf);
 
     my $res = RdKafka::pause_partitions($rk, $partitions);

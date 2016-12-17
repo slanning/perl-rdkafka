@@ -6,7 +6,7 @@ use RdKafka qw/:enums/;
 use Test::More tests => 2;
 
 {
-    my $conf = RdKafka::conf_new();
+    my $conf = RdKafka::Conf->new();
     my $rk = RdKafka::new(RD_KAFKA_CONSUMER, $conf);
 
     my $queue = RdKafka::queue_new($rk);

@@ -6,22 +6,22 @@ use RdKafka qw/:enums/;
 use Test::More tests => 7;
 
 {
-    my $conf = RdKafka::conf_new();
+    my $conf = RdKafka::Conf->new();
     ok(ref($conf), "conf_new returns a ref");
     my $expected_class = 'RdKafka::Conf';
     is(ref($conf), $expected_class, "conf_new ref isa '$expected_class'");
 
-    my $dup  = RdKafka::conf_dup($conf);
+    my $dup  = $conf->dup();
     ok(ref($conf), "conf_dup returns a ref");
     is(ref($conf), $expected_class, "conf_dup ref isa '$expected_class'");
 }
 
 {
-    my $conf = RdKafka::conf_new();
+    my $conf = RdKafka::Conf->new();
 
     my $test_name = "conf_set compression.codec succeeded";
     eval {  # such a crappy interface...
-        RdKafka::conf_set($conf, "compression.codec", "snappy");
+        $conf->set("compression.codec", "snappy");
         ok(1, $test_name);
         1;
     } or do {
@@ -31,11 +31,11 @@ use Test::More tests => 7;
 }
 
 {
-    my $conf = RdKafka::conf_new();
+    my $conf = RdKafka::Conf->new();
 
     my $test_name = "conf_set batch.num.messages invalid";
     eval {
-        RdKafka::conf_set($conf, "batch.num.messages", "none, please");
+        $conf->set("batch.num.messages", "none, please");
         fail($test_name);
         1;
     } or do {
@@ -45,11 +45,11 @@ use Test::More tests => 7;
 }
 
 {
-    my $conf = RdKafka::conf_new();
+    my $conf = RdKafka::Conf->new();
 
     my $test_name = "conf_set w.t.f. unknown";
     eval {
-        RdKafka::conf_set($conf, "w.t.f.", "this is crazy!");
+        $conf->set("w.t.f.", "this is crazy!");
         fail($test_name);
         1;
     } or do {
@@ -61,7 +61,7 @@ use Test::More tests => 7;
 {
     # if version >= 0x000901ff
     #use RdKafka qw/:event/;
-    my $conf = RdKafka::conf_new();
+    my $conf = RdKafka::Conf->new();
 
     ## "events is a bitmask of RD_KAFKA_EVENT_* of events to enable
     ## for consumption by `rd_kafka_queue_poll()`"
