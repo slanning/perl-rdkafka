@@ -16,6 +16,7 @@ typedef rd_kafka_topic_partition_t *RdKafka__TopicPartition;
 typedef rd_kafka_topic_partition_list_t *RdKafka__TopicPartitionList;
 typedef rd_kafka_message_t *RdKafka__Message;
 typedef rd_kafka_conf_t *RdKafka__Conf;
+typedef rd_kafka_topic_conf_t *RdKafka__TopicConf;
 
 
 /* make this a compile flag? */
@@ -260,7 +261,7 @@ void *
 rd_kafka_opaque(const rd_kafka_t *rk)
 
 void
-rd_kafka_conf_set_default_topic_conf(RdKafka::Conf conf, rd_kafka_topic_conf_t *tconf)
+rd_kafka_conf_set_default_topic_conf(RdKafka::Conf conf, RdKafka::TopicConf tconf)
 
 ## TODO: size_t * IN_OUT
 ## rd_kafka_conf_res_t
@@ -285,22 +286,22 @@ rd_kafka_conf_properties_show(FILE *fp)
 
 ### TOPIC CONFIGURATION
 
-rd_kafka_topic_conf_t *
+RdKafka::TopicConf 
 rd_kafka_topic_conf_new()
 
-rd_kafka_topic_conf_t *
-rd_kafka_topic_conf_dup(rd_kafka_topic_conf_t *conf)
+RdKafka::TopicConf 
+rd_kafka_topic_conf_dup(RdKafka::TopicConf conf)
 
 ## TODO
 ## rd_kafka_conf_res_t
-## rd_kafka_topic_conf_set(rd_kafka_topic_conf_t *conf, const char *name, const char *value, char *errstr, size_t errstr_size)
+## rd_kafka_topic_conf_set(RdKafka::TopicConf conf, const char *name, const char *value, char *errstr, size_t errstr_size)
 
 ## void
-## rd_kafka_topic_conf_set_opaque(rd_kafka_topic_conf_t *conf, void *opaque)
+## rd_kafka_topic_conf_set_opaque(RdKafka::TopicConf conf, void *opaque)
 
 ## TODO
 ## void
-## rd_kafka_topic_conf_set_partitioner_cb (rd_kafka_topic_conf_t *topic_conf, int32_t (*partitioner) (const rd_kafka_topic_t *rkt, const void *keydata, size_t keylen, int32_t partition_cnt, void *rkt_opaque, void *msg_opaque))
+## rd_kafka_topic_conf_set_partitioner_cb (RdKafka::TopicConf topic_conf, int32_t (*partitioner) (const rd_kafka_topic_t *rkt, const void *keydata, size_t keylen, int32_t partition_cnt, void *rkt_opaque, void *msg_opaque))
 
 
 ### PARTITIONERS
@@ -367,7 +368,7 @@ rd_kafka_memberid(rd_kafka_t *rk)
 ## * Applications must eventually call rd_kafka_topic_destroy() for each
 ## * succesfull call to rd_kafka_topic_new() to clear up resources.
 rd_kafka_topic_t *
-rd_kafka_topic_new(rd_kafka_t *rk, const char *topic, rd_kafka_topic_conf_t *conf)
+rd_kafka_topic_new(rd_kafka_t *rk, const char *topic, RdKafka::TopicConf conf)
 
 ## TODO
 void
@@ -651,18 +652,18 @@ void
 rd_kafka_DESTROY(RdKafka::Conf conf)
   CODE:
 #ifdef PERL_RDKAFKA_DEBUG
-    printf("DESTROY rd_kafka_conf_tPtr\n");
+    printf("DESTROY RdKafka::Conf\n");
 #endif
     /* rd_kafka_conf_destroy(conf); */
 
 
-MODULE = RdKafka    PACKAGE = rd_kafka_topic_conf_tPtr    PREFIX = rd_kafka_
+MODULE = RdKafka    PACKAGE = RdKafka::TopicConf    PREFIX = rd_kafka_
 
 void
-rd_kafka_DESTROY(rd_kafka_topic_conf_t *topic_conf)
+rd_kafka_DESTROY(RdKafka::TopicConf topic_conf)
   CODE:
 #ifdef PERL_RDKAFKA_DEBUG
-    printf("DESTROY rd_kafka_topic_conf_tPtr\n");
+    printf("DESTROY RdKafka::TopicConf\n");
 #endif
     /* rd_kafka_topic_conf_destroy(topic_conf); */
 
