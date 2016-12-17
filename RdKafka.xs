@@ -15,6 +15,7 @@ extern "C" {
 typedef rd_kafka_topic_partition_t *RdKafka__TopicPartition;
 typedef rd_kafka_topic_partition_list_t *RdKafka__TopicPartitionList;
 typedef rd_kafka_message_t *RdKafka__Message;
+typedef rd_kafka_conf_t *RdKafka__Conf;
 
 
 /* make this a compile flag? */
@@ -164,25 +165,25 @@ rd_kafka_message_destroy(RdKafka::Message rkmessage)
 
 ### CONFIGURATION
 
-rd_kafka_conf_t *
+RdKafka::Conf
 rd_kafka_conf_new()
 
 ## I believe rd_kafka_new will normally destroy this itself (?)
 ## but I guess if rd_kafka_conf_dup is called...
 ## (should add something to DESTROY when it goes out of scope, though...)
 void
-rd_kafka_conf_destroy(rd_kafka_conf_t *conf)
+rd_kafka_conf_destroy(RdKafka::Conf conf)
 
-rd_kafka_conf_t *
-rd_kafka_conf_dup(rd_kafka_conf_t *conf)
+RdKafka::Conf
+rd_kafka_conf_dup(RdKafka::Conf conf)
 ## rd_kafka_conf_dup(const rd_kafka_conf_t *conf)
 
 ## rd_kafka_conf_res_t
-## rd_kafka_conf_set(rd_kafka_conf_t *conf, const char *name, const char *value, char *errstr, size_t errstr_size)
+## rd_kafka_conf_set(RdKafka::Conf conf, const char *name, const char *value, char *errstr, size_t errstr_size)
 ## TODO?
 ## just croaking on error for now
 void
-rd_kafka_conf_set(rd_kafka_conf_t *conf, const char *name, const char *value)
+rd_kafka_conf_set(RdKafka::Conf conf, const char *name, const char *value)
   PREINIT:
     char buf[PERL_RDKAFKA_DEFAULT_ERRSTR_SIZE];
     rd_kafka_conf_res_t res;
@@ -198,12 +199,12 @@ rd_kafka_conf_set(rd_kafka_conf_t *conf, const char *name, const char *value)
 
 ### handle version
 ## void
-## rd_kafka_conf_set_events(rd_kafka_conf_t *conf, int events)
+## rd_kafka_conf_set_events(RdKafka::Conf conf, int events)
 
 ## #endif
 
 ## @deprecated See rd_kafka_conf_set_dr_msg_cb()
-## void rd_kafka_conf_set_dr_cb(rd_kafka_conf_t *conf,
+## void rd_kafka_conf_set_dr_cb(RdKafka::Conf conf,
 ##			      void (*dr_cb) (rd_kafka_t *rk,
 ##					     void *payload, size_t len,
 ##					     rd_kafka_resp_err_t err,
@@ -212,54 +213,54 @@ rd_kafka_conf_set(rd_kafka_conf_t *conf, const char *name, const char *value)
 ## callbacks - these will need special handling like
 ## PerlOGRECallback.{c,h} , PerlOGRECallbackManager.{c.h}
 ## void
-## rd_kafka_conf_set_dr_msg_cb(rd_kafka_conf_t *conf, void (*dr_msg_cb) (rd_kafka_t *rk, const RdKafka::Message rkmessage, void *opaque))
+## rd_kafka_conf_set_dr_msg_cb(RdKafka::Conf conf, void (*dr_msg_cb) (rd_kafka_t *rk, const RdKafka::Message rkmessage, void *opaque))
 ##
 ## void
-## rd_kafka_conf_set_consume_cb(rd_kafka_conf_t *conf, void (*consume_cb) (RdKafka::Message rkmessage, void *opaque))
+## rd_kafka_conf_set_consume_cb(RdKafka::Conf conf, void (*consume_cb) (RdKafka::Message rkmessage, void *opaque))
 ##
 ## void
-## rd_kafka_conf_set_rebalance_cb(rd_kafka_conf_t *conf, void (*rebalance_cb) (rd_kafka_t *rk, rd_kafka_resp_err_t err, RdKafka::TopicPartitionList partitions, void *opaque))
+## rd_kafka_conf_set_rebalance_cb(RdKafka::Conf conf, void (*rebalance_cb) (rd_kafka_t *rk, rd_kafka_resp_err_t err, RdKafka::TopicPartitionList partitions, void *opaque))
 ##
 ## void
-## rd_kafka_conf_set_offset_commit_cb(rd_kafka_conf_t *conf, void (*offset_commit_cb) (rd_kafka_t *rk, rd_kafka_resp_err_t err, RdKafka::TopicPartitionList offsets, void *opaque))
+## rd_kafka_conf_set_offset_commit_cb(RdKafka::Conf conf, void (*offset_commit_cb) (rd_kafka_t *rk, rd_kafka_resp_err_t err, RdKafka::TopicPartitionList offsets, void *opaque))
 ##
 ## void
-## rd_kafka_conf_set_error_cb(rd_kafka_conf_t *conf, void (*error_cb) (rd_kafka_t *rk, int err, const char *reason, void *opaque))
+## rd_kafka_conf_set_error_cb(RdKafka::Conf conf, void (*error_cb) (rd_kafka_t *rk, int err, const char *reason, void *opaque))
 ##
 ## void
-## rd_kafka_conf_set_throttle_cb(rd_kafka_conf_t *conf, void (*throttle_cb) (rd_kafka_t *rk, const char *broker_name, int32_t broker_id, int throttle_time_ms, void *opaque))
+## rd_kafka_conf_set_throttle_cb(RdKafka::Conf conf, void (*throttle_cb) (rd_kafka_t *rk, const char *broker_name, int32_t broker_id, int throttle_time_ms, void *opaque))
 ##
 ## void
-## rd_kafka_conf_set_log_cb(rd_kafka_conf_t *conf, void (*log_cb) (const rd_kafka_t *rk, int level, const char *fac, const char *buf))
+## rd_kafka_conf_set_log_cb(RdKafka::Conf conf, void (*log_cb) (const rd_kafka_t *rk, int level, const char *fac, const char *buf))
 ##
 ## void
-## rd_kafka_conf_set_stats_cb(rd_kafka_conf_t *conf, int (*stats_cb) (rd_kafka_t *rk, char *json, size_t json_len, void *opaque))
+## rd_kafka_conf_set_stats_cb(RdKafka::Conf conf, int (*stats_cb) (rd_kafka_t *rk, char *json, size_t json_len, void *opaque))
 ##
 ## void
-## rd_kafka_conf_set_socket_cb(rd_kafka_conf_t *conf, int (*socket_cb) (int domain, int type, int protocol, void *opaque))
+## rd_kafka_conf_set_socket_cb(RdKafka::Conf conf, int (*socket_cb) (int domain, int type, int protocol, void *opaque))
 
 ## #if RD_KAFKA_VERSION >= 0x000902ff
 
 ## void
-## rd_kafka_conf_set_connect_cb(rd_kafka_conf_t *conf, int (*connect_cb) (int sockfd, const struct sockaddr *addr, int addrlen, const char *id, void *opaque))
+## rd_kafka_conf_set_connect_cb(RdKafka::Conf conf, int (*connect_cb) (int sockfd, const struct sockaddr *addr, int addrlen, const char *id, void *opaque))
 ##
 ## void
-## rd_kafka_conf_set_closesocket_cb(rd_kafka_conf_t *conf, int (*closesocket_cb) (int sockfd, void *opaque))
+## rd_kafka_conf_set_closesocket_cb(RdKafka::Conf conf, int (*closesocket_cb) (int sockfd, void *opaque))
 
 ## #endif
 
 ## #ifndef _MSC_VER
-## void rd_kafka_conf_set_open_cb(rd_kafka_conf_t *conf, int (*open_cb) (const char *pathname, int flags, mode_t mode, void *opaque))
+## void rd_kafka_conf_set_open_cb(RdKafka::Conf conf, int (*open_cb) (const char *pathname, int flags, mode_t mode, void *opaque))
 ## #endif
 
 void
-rd_kafka_conf_set_opaque(rd_kafka_conf_t *conf, void *opaque)
+rd_kafka_conf_set_opaque(RdKafka::Conf conf, void *opaque)
 
 void *
 rd_kafka_opaque(const rd_kafka_t *rk)
 
 void
-rd_kafka_conf_set_default_topic_conf(rd_kafka_conf_t *conf, rd_kafka_topic_conf_t *tconf)
+rd_kafka_conf_set_default_topic_conf(RdKafka::Conf conf, rd_kafka_topic_conf_t *tconf)
 
 ## TODO: size_t * IN_OUT
 ## rd_kafka_conf_res_t
@@ -272,7 +273,7 @@ rd_kafka_conf_set_default_topic_conf(rd_kafka_conf_t *conf, rd_kafka_topic_conf_
 ## TODO: take care of automatically freeing the dump on DESTROY
 ## The dump must be freed with `rd_kafka_conf_dump_free()`.
 ## const char **
-## rd_kafka_conf_dump(rd_kafka_conf_t *conf, size_t *cntp)
+## rd_kafka_conf_dump(RdKafka::Conf conf, size_t *cntp)
 ## const char **
 ## rd_kafka_topic_conf_dump(rd_kafka_topic_conf_t *conf, size_t *cntp)
 ## void
@@ -328,10 +329,10 @@ rd_kafka_topic_conf_dup(rd_kafka_topic_conf_t *conf)
 ## I'd like to allow conf to be optional and errstr to hold an error,
 ## but I haven't figured out how to do that.
 rd_kafka_t *
-rd_kafka_new(rd_kafka_type_t type, rd_kafka_conf_t *conf)
+rd_kafka_new(rd_kafka_type_t type, RdKafka::Conf conf)
   PREINIT:
     char buf[PERL_RDKAFKA_DEFAULT_ERRSTR_SIZE];
-    rd_kafka_conf_t *C_conf;
+    RdKafka__Conf C_conf;
   CODE:
     RETVAL = rd_kafka_new(type, conf, buf, PERL_RDKAFKA_DEFAULT_ERRSTR_SIZE);
     if (RETVAL == NULL)
@@ -647,7 +648,7 @@ MODULE = RdKafka    PACKAGE = rd_kafka_conf_tPtr    PREFIX = rd_kafka_
 ## rd_kafka_new destroys the conf, so can't call rd_kafka_conf_destroy.
 ## Not sure how to deal with that now.
 void
-rd_kafka_DESTROY(rd_kafka_conf_t * conf)
+rd_kafka_DESTROY(RdKafka::Conf conf)
   CODE:
 #ifdef PERL_RDKAFKA_DEBUG
     printf("DESTROY rd_kafka_conf_tPtr\n");

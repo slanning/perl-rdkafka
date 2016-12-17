@@ -8,7 +8,7 @@ use Test::More tests => 7;
 {
     my $conf = RdKafka::conf_new();
     ok(ref($conf), "conf_new returns a ref");
-    my $expected_class = 'rd_kafka_conf_tPtr';
+    my $expected_class = 'RdKafka::Conf';
     is(ref($conf), $expected_class, "conf_new ref isa '$expected_class'");
 
     my $dup  = RdKafka::conf_dup($conf);
