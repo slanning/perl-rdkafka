@@ -31,11 +31,12 @@ const RdKafka::Conf T_PTROBJ
 RdKafka::TopicConf T_PTROBJ
 const RdKafka::TopicConf T_PTROBJ
 
+RdKafka::Metadata::Broker T_PTROBJ
 RdKafka::Metadata::Partition T_PTROBJ
 RdKafka::Metadata::Topic T_PTROBJ
 RdKafka::Metadata T_PTROBJ
 
-RdKafka::GroupMember T_PTROBJ
+RdKafka::GroupMemberInfo T_PTROBJ
 RdKafka::GroupInfo T_PTROBJ
 RdKafka::GroupList T_PTROBJ
 

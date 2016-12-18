@@ -12,7 +12,7 @@ use Test::More tests => 9;
 ## but I haven't figured out how to do that.
 {
     my $conf = RdKafka::Conf->new();
-    my $rk = RdKafka::new(RD_KAFKA_CONSUMER, $conf);
+    my $rk = RdKafka->new(RD_KAFKA_CONSUMER, $conf);
 
     ok(ref($rk), "new returns a ref");
     my $expected_class = 'RdKafka';
@@ -22,7 +22,7 @@ use Test::More tests => 9;
 
 {
     my $conf = RdKafka::Conf->new();
-    my $rk = RdKafka::new(RD_KAFKA_PRODUCER, $conf);
+    my $rk = RdKafka->new(RD_KAFKA_PRODUCER, $conf);
     my $name = RdKafka::name($rk);
     # for me it was: rdkafka#producer-2
     like($name, qr/\S/, "name isn't empty");
@@ -30,61 +30,61 @@ use Test::More tests => 9;
 
 {
     my $conf = RdKafka::Conf->new();
-    my $rk = RdKafka::new(RD_KAFKA_PRODUCER, $conf);
+    my $rk = RdKafka->new(RD_KAFKA_PRODUCER, $conf);
     my $memberid = RdKafka::memberid($rk);
     ok(!defined($memberid), "memberid isn't available...");
 
     # currently should free this here with mem_free
     # but I hope to fix that
-    #RdKafka::mem_free($rk, $memberid);
+    # $rk->mem_free($memberid);
 }
 
 {
     my $conf = RdKafka::Conf->new();
-    my $rk = RdKafka::new(RD_KAFKA_PRODUCER, $conf);
+    my $rk = RdKafka->new(RD_KAFKA_PRODUCER, $conf);
 
-    my $topic_conf = RdKafka::topic_conf_new();
-    my $rkt = RdKafka::topic_new($rk, "Scott", $topic_conf);
+    my $topic_conf = RdKafka::TopicConf->new();
+    my $rkt = RdKafka::Topic->new($rk, "Scott", $topic_conf);
     # should do this
-    #RdKafka::topic_destroy($rkt);
+    # $rkt->destroy();
 }
 
 {
     my $conf = RdKafka::Conf->new();
-    my $rk = RdKafka::new(RD_KAFKA_PRODUCER, $conf);
+    my $rk = RdKafka->new(RD_KAFKA_PRODUCER, $conf);
 
-    my $topic_conf = RdKafka::topic_conf_new();
+    my $topic_conf = RdKafka::TopicConf->new();
     my $expected_name = "Scott";
-    my $rkt = RdKafka::topic_new($rk, $expected_name, $topic_conf);
+    my $rkt = RdKafka::Topic->new($rk, $expected_name, $topic_conf);
 
-    my $got_name = RdKafka::topic_name($rkt);
-    is($got_name, $expected_name, "topic_name was expected ($expected_name)");
+    my $got_name = $rkt->name;
+    is($got_name, $expected_name, "topic name was expected ($expected_name)");
 
     # should do this
-    #RdKafka::topic_destroy($rkt);
+    # $rkt->destroy();
 }
 
 {
     my $conf = RdKafka::Conf->new();
-    my $rk = RdKafka::new(RD_KAFKA_PRODUCER, $conf);
+    my $rk = RdKafka->new(RD_KAFKA_PRODUCER, $conf);
 
-    my $topic_conf = RdKafka::topic_conf_new();
+    my $topic_conf = RdKafka::TopicConf->new();
     my $expected_name = "Scott";
-    my $rkt = RdKafka::topic_new($rk, $expected_name, $topic_conf);
+    my $rkt = RdKafka::Topic->new($rk, $expected_name, $topic_conf);
 
-    my $opaque = RdKafka::topic_opaque($rkt);
+    my $opaque = $rkt->opaque;
     # I guess it's 0 because it's not set so it's NULL?
-    is($opaque, 0, "topic_opaque is 0");
+    is($opaque, 0, "topic opaque is 0");
 
     # should do this
-    #RdKafka::topic_destroy($rkt);
+    # $rkt->destroy();
 }
 
 {
     my $conf = RdKafka::Conf->new();
-    my $rk = RdKafka::new(RD_KAFKA_PRODUCER, $conf);
+    my $rk = RdKafka->new(RD_KAFKA_PRODUCER, $conf);
 
-    my $num_events = RdKafka::poll($rk, 10);
+    my $num_events = $rk->poll(10);
     is($num_events, 0, "no events were received by poll");
 }
 
@@ -92,12 +92,12 @@ use Test::More tests => 9;
     my $list_size = 5;
     my $partitions = RdKafka::TopicPartitionList->new($list_size);
     my $conf = RdKafka::Conf->new();
-    my $rk = RdKafka::new(RD_KAFKA_PRODUCER, $conf);
+    my $rk = RdKafka->new(RD_KAFKA_PRODUCER, $conf);
 
-    my $res = RdKafka::pause_partitions($rk, $partitions);
+    my $res = $rk->pause_partitions($partitions);
     is($res, RD_KAFKA_RESP_ERR_NO_ERROR, "pause_partitions had no error");
 
-    $res = RdKafka::resume_partitions($rk, $partitions);
+    $res = $rk->resume_partitions($partitions);
     is($res, RD_KAFKA_RESP_ERR_NO_ERROR, "resume_partitions had no error");
 
     # how to check failure?

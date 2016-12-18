@@ -80,7 +80,7 @@ use Test::More tests => 28;
     my $list = RdKafka::TopicPartitionList->new($expected_allocated_size);
 
     # what is this for? (needed in Perl?)
-    my $list_copy = RdKafka::TopicPartitionList->copy($list);
+    my $list_copy = $list->copy();
 
     test_list($list, $expected_allocated_size);
 }

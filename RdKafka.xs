@@ -24,9 +24,9 @@ typedef rd_kafka_metadata_broker_t *RdKafka__MetadataBroker;
 typedef rd_kafka_metadata_partition_t *RdKafka__MetadataPartition;
 typedef rd_kafka_metadata_topic_t *RdKafka__MetadataTopic;
 typedef rd_kafka_metadata_t *RdKafka__Metadata;
-typedef struct rd_kafka_group_member_t *RdKafka__GroupMember;
-typedef struct rd_kafka_group_info_t *RdKafka__GroupInfo;
-typedef struct rd_kafka_group_list_t *RdKafka__GroupList;
+typedef struct rd_kafka_group_member_info *RdKafka__GroupMemberInfo;
+typedef struct rd_kafka_group_info *RdKafka__GroupInfo;
+typedef struct rd_kafka_group_list *RdKafka__GroupList;
 #if RD_KAFKA_VERSION >= 0x000902ff
 typedef rd_kafka_event_t *RdKafka__Event;
 #endif
@@ -59,6 +59,7 @@ MODULE = RdKafka    PACKAGE = RdKafka    PREFIX = rd_kafka_
 
 ### VERSION
 
+## (...) so these can be called as class or object methods or functions...
 int
 rd_kafka_version(...)
 
@@ -71,14 +72,14 @@ rd_kafka_version_str(...)
 ## omitted: deprecated RD_KAFKA_DEBUG_CONTEXTS
 
 const char *
-rd_kafka_get_debug_contexts()
+rd_kafka_get_debug_contexts(...)
 
 ## original:
 ## void rd_kafka_get_err_descs (const struct rd_kafka_err_desc **errdescs, size_t *cntp)
 ## instead of IN/OUT params, just return an aref;
 ## maybe should do { $code => { name => '...', desc => '...' } } instead of an aref of hashes
 AV *
-rd_kafka_get_err_descs()
+rd_kafka_get_err_descs(...)
   CODE:
     const struct rd_kafka_err_desc *errdesc;
     size_t cnt, i;
@@ -109,68 +110,13 @@ const char *
 rd_kafka_err2name(rd_kafka_resp_err_t err)
 
 rd_kafka_resp_err_t
-rd_kafka_last_error()
+rd_kafka_last_error(...)
 
 rd_kafka_resp_err_t
 rd_kafka_errno2err(int errnox)
 
 int
-rd_kafka_errno()
-
-
-### MESSAGES
-
-void
-rd_kafka_message_destroy(RdKafka::Message rkmessage)
-
-## TODO: maybe should do this in RdKafka::Message
-## static RD_INLINE const char *
-## RD_UNUSED 
-## rd_kafka_message_errstr(const rd_kafka_message_t *rkmessage) {
-## Gives a compile error, maybe because of the "static"
-## static const char *
-## rd_kafka_message_errstr(const rd_kafka_message_t *rkmessage)
-
-## TODO: maybe should do this in RdKafka::Message
-## (tstype is a pointer, meant as a 2nd return value)
-## int64_t
-## rd_kafka_message_timestamp(const RdKafka::Message rkmessage, OUT rd_kafka_timestamp_type_t tstype)
-
-
-### TOPIC CONFIGURATION
-
-RdKafka::TopicConf 
-rd_kafka_topic_conf_new()
-
-RdKafka::TopicConf 
-rd_kafka_topic_conf_dup(RdKafka::TopicConf conf)
-
-## TODO
-## rd_kafka_conf_res_t
-## rd_kafka_topic_conf_set(RdKafka::TopicConf conf, const char *name, const char *value, char *errstr, size_t errstr_size)
-
-## void
-## rd_kafka_topic_conf_set_opaque(RdKafka::TopicConf conf, void *opaque)
-
-## TODO
-## void
-## rd_kafka_topic_conf_set_partitioner_cb (RdKafka::TopicConf topic_conf, int32_t (*partitioner) (const rd_kafka_topic_t *rkt, const void *keydata, size_t keylen, int32_t partition_cnt, void *rkt_opaque, void *msg_opaque))
-
-
-### PARTITIONERS
-
-## TODO - deferred until rd_kafka_topic_new is wrapped
-## int
-## rd_kafka_topic_partition_available(const rd_kafka_topic_t *rkt, int32_t partition)
-
-## int32_t
-## rd_kafka_msg_partitioner_random(const rd_kafka_topic_t *rkt, const void *key, size_t keylen, int32_t partition_cnt, void *opaque, void *msg_opaque)
-
-## int32_t
-## rd_kafka_msg_partitioner_consistent(const rd_kafka_topic_t *rkt, const void *key, size_t keylen, int32_t partition_cnt, void *opaque, void *msg_opaque)
-
-## int32_t
-## rd_kafka_msg_partitioner_consistent_random(const rd_kafka_topic_t *rkt, const void *key, size_t keylen, int32_t partition_cnt, void *opaque, void *msg_opaque)
+rd_kafka_errno(...)
 
 
 ### MAIN HANDLES
@@ -183,7 +129,7 @@ rd_kafka_topic_conf_dup(RdKafka::TopicConf conf)
 ## I'd like to allow conf to be optional and errstr to hold an error,
 ## but I haven't figured out how to do that.
 RdKafka 
-rd_kafka_new(rd_kafka_type_t type, RdKafka::Conf conf)
+rd_kafka_new(char *package, rd_kafka_type_t type, RdKafka::Conf conf)
   PREINIT:
     char buf[PERL_RDKAFKA_DEFAULT_ERRSTR_SIZE];
     RdKafka__Conf C_conf;
@@ -207,29 +153,6 @@ rd_kafka_name(RdKafka rk)
 char *
 rd_kafka_memberid(RdKafka rk)
 #rd_kafka_memberid(const rd_kafka_t *rk)
-
-## * \p conf is an optional configuration for the topic created with
-## * `rd_kafka_topic_conf_new()` that will be used instead of the default
-## * topic configuration.
-## * The \p conf object is freed by this function and must not be used or
-## * destroyed by the application sub-sequently.
-## * See `rd_kafka_topic_conf_set()` et.al for more information.
-## *
-## * Topic handles are refcounted internally and calling rd_kafka_topic_new()
-## * again with the same topic name will return the previous topic handle
-## * without updating the original handle's configuration.
-## * Applications must eventually call rd_kafka_topic_destroy() for each
-## * succesfull call to rd_kafka_topic_new() to clear up resources.
-RdKafka::Topic
-rd_kafka_topic_new(RdKafka rk, const char *topic, RdKafka::TopicConf conf)
-
-const char *
-rd_kafka_topic_name(RdKafka::Topic rkt)
-#rd_kafka_topic_name(const rd_kafka_topic_t *rkt)
-
-void *
-rd_kafka_topic_opaque(RdKafka::Topic rkt)
-#rd_kafka_topic_opaque(const rd_kafka_topic_t *rkt)
 
 int
 rd_kafka_poll(RdKafka rk, int timeout_ms)
@@ -259,13 +182,6 @@ rd_kafka_resume_partitions(RdKafka rk, RdKafka::TopicPartitionList partitions)
 void
 rd_kafka_mem_free(RdKafka rk, void *ptr)
 
-
-### QUEUE API
-
-#  "See rd_kafka_consume_start_queue(), rd_kafka_consume_queue(), et.al."
-RdKafka::Queue
-rd_kafka_queue_new(RdKafka rk)
-
 ## TODO - after 0.9.2 installed
 #if RD_KAFKA_VERSION >= 0x000902ff
 
@@ -275,16 +191,7 @@ rd_kafka_queue_get_main(RdKafka rk)
 RdKafka::Queue
 rd_kafka_queue_get_consumer(RdKafka rk)
 
-void
-rd_kafka_queue_forward(RdKafka::Queue src, RdKafka::Queue dst)
-
-size_t
-rd_kafka_queue_length(RdKafka::Queue rkqu)
-
-void
-rd_kafka_queue_io_event_enable(RdKafka::Queue rkqu, int fd, const void *payload, size_t size)
-
-#endif   /* RD_KAFKA_VERSION >= 0x000902ff */
+#endif
 
 
 ## (simple legacy consumer API is omitted)
@@ -320,8 +227,8 @@ rd_kafka_consumer_close(RdKafka rk)
 ## rd_kafka_resp_err_t
 ## rd_kafka_commit(RdKafka rk, const RdKafka::TopicPartitionList offsets, int async)
 
-## rd_kafka_resp_err_t
-## rd_kafka_commit_message(RdKafka rk, const RdKafka::Message rkmessage, int async)
+rd_kafka_resp_err_t
+rd_kafka_commit_message(RdKafka rk, RdKafka::Message rkmessage, int async)
 
 #if RD_KAFKA_VERSION >= 0x000902ff
 
@@ -336,13 +243,25 @@ rd_kafka_consumer_close(RdKafka rk)
 ## rd_kafka_resp_err_t
 ## rd_kafka_position(RdKafka rk, RdKafka::TopicPartitionList partitions)
 
+void *
+rd_kafka_opaque(RdKafka rk)
+
+void
+rd_kafka_DESTROY(RdKafka rk)
+  CODE:
+#ifdef PERL_RDKAFKA_DEBUG
+    printf("DESTROY RdKafka\n");
+#endif
+    rd_kafka_destroy(rk);  /* should do this? */
+
+
 
 
 ##########
 
 ### STRUCT CLASSES
 
-MODULE = RdKafka    PACKAGE = RdKafka::TopicPartition    PREFIX = rd_kafka_
+MODULE = RdKafka    PACKAGE = RdKafka::TopicPartition    PREFIX = rd_kafka_topic_partition_
 
 ### TOPIC PARTITION
 
@@ -356,7 +275,7 @@ rd_kafka_topic_partition_destroy(RdKafka::TopicPartition rktpar)
 #endif
 
 void
-rd_kafka_DESTROY(RdKafka::TopicPartition toppar)
+rd_kafka_topic_partition_DESTROY(RdKafka::TopicPartition toppar)
   CODE:
 #ifdef PERL_RDKAFKA_DEBUG
     printf("DESTROY RdKafka::TopicPartition\n");
@@ -369,21 +288,21 @@ rd_kafka_DESTROY(RdKafka::TopicPartition toppar)
 ## struct rd_kafka_topic_partition_t accessors: topic, partition, offset, [metadata,] metadata_size(?), [opaque,] err
 
 char *
-rd_kafka_topic(RdKafka::TopicPartition toppar)
+rd_kafka_topic_partition_topic(RdKafka::TopicPartition toppar)
   CODE:
     RETVAL = toppar->topic;
   OUTPUT:
     RETVAL
 
 int32_t
-rd_kafka_partition(RdKafka::TopicPartition toppar)
+rd_kafka_topic_partition_partition(RdKafka::TopicPartition toppar)
   CODE:
     RETVAL = toppar->partition;
   OUTPUT:
     RETVAL
 
 int64_t
-rd_kafka_offset(RdKafka::TopicPartition toppar)
+rd_kafka_topic_partition_offset(RdKafka::TopicPartition toppar)
   CODE:
     RETVAL = toppar->offset;
   OUTPUT:
@@ -392,14 +311,14 @@ rd_kafka_offset(RdKafka::TopicPartition toppar)
 ## TODO: deferred until implementing metadata API (I think)
 ##        void        *metadata;          /**< Metadata */
 ## ???
-## rd_kafka_metadata(RdKafka::TopicPartition toppar)
+## rd_kafka_topic_partition_metadata(RdKafka::TopicPartition toppar)
 ##   CODE:
 ##     RETVAL = toppar->metadata;
 ##   OUTPUT:
 ##     RETVAL
 
 size_t
-rd_kafka_metadata_size(RdKafka::TopicPartition toppar)
+rd_kafka_topic_partition_metadata_size(RdKafka::TopicPartition toppar)
   CODE:
     RETVAL = toppar->metadata_size;
   OUTPUT:
@@ -408,78 +327,50 @@ rd_kafka_metadata_size(RdKafka::TopicPartition toppar)
 ## TODO: figure out later what "opaque" is
 ##        void        *opaque;            /**< Application opaque */
 ## ???
-## rd_kafka_opaque(RdKafka::TopicPartition toppar)
+## rd_kafka_topic_partition_opaque(RdKafka::TopicPartition toppar)
 ##   CODE:
 ##     RETVAL = toppar->opaque;
 ##   OUTPUT:
 ##     RETVAL
 
 rd_kafka_resp_err_t
-rd_kafka_err(RdKafka::TopicPartition toppar)
+rd_kafka_topic_partition_err(RdKafka::TopicPartition toppar)
   CODE:
     RETVAL = toppar->err;
   OUTPUT:
     RETVAL
 
 
-MODULE = RdKafka    PACKAGE = RdKafka::TopicPartitionList
+MODULE = RdKafka    PACKAGE = RdKafka::TopicPartitionList    PREFIX = rd_kafka_topic_partition_list_
 
 RdKafka::TopicPartitionList
-new(char *package, int size)
-  CODE:
-    RETVAL = rd_kafka_topic_partition_list_new(size);
-  OUTPUT:
-    RETVAL
+rd_kafka_topic_partition_list_new(char *package, int size)
+  C_ARGS:
+    size
 
 RdKafka::TopicPartition
-add(RdKafka::TopicPartitionList rktparlist, const char *topic, int32_t partition)
-  CODE:
-    RETVAL = rd_kafka_topic_partition_list_add(rktparlist, topic, partition);
-  OUTPUT:
-    RETVAL
+rd_kafka_topic_partition_list_add(RdKafka::TopicPartitionList rktparlist, const char *topic, int32_t partition)
 
 void
-add_range(RdKafka::TopicPartitionList rktparlist, const char *topic, int32_t start, int32_t stop)
-  CODE:
-    rd_kafka_topic_partition_list_add_range(rktparlist, topic, start, stop);
+rd_kafka_topic_partition_list_add_range(RdKafka::TopicPartitionList rktparlist, const char *topic, int32_t start, int32_t stop)
 
 int
-del(RdKafka::TopicPartitionList rktparlist, const char *topic, int32_t partition)
-  CODE:
-    RETVAL = rd_kafka_topic_partition_list_del(rktparlist, topic, partition);
-  OUTPUT:
-    RETVAL
+rd_kafka_topic_partition_list_del(RdKafka::TopicPartitionList rktparlist, const char *topic, int32_t partition)
 
 int
-del_by_idx(RdKafka::TopicPartitionList rktparlist, int idx)
-  CODE:
-    RETVAL = rd_kafka_topic_partition_list_del_by_idx(rktparlist, idx);
-  OUTPUT:
-    RETVAL
+rd_kafka_topic_partition_list_del_by_idx(RdKafka::TopicPartitionList rktparlist, int idx)
 
 RdKafka::TopicPartitionList
-copy(char *package, RdKafka::TopicPartitionList src)
-  CODE:
-    RETVAL = rd_kafka_topic_partition_list_copy(src);
-  OUTPUT:
-    RETVAL
+rd_kafka_topic_partition_list_copy(RdKafka::TopicPartitionList src)
 
 rd_kafka_resp_err_t
-set_offset(RdKafka::TopicPartitionList rktparlist, const char *topic, int32_t partition, int64_t offset)
-  CODE:
-    RETVAL = rd_kafka_topic_partition_list_set_offset(rktparlist, topic, partition, offset);
-  OUTPUT:
-    RETVAL
+rd_kafka_topic_partition_list_set_offset(RdKafka::TopicPartitionList rktparlist, const char *topic, int32_t partition, int64_t offset)
 
 RdKafka::TopicPartition
-find(RdKafka::TopicPartitionList rktparlist, const char *topic, int32_t partition)
-  CODE:
-    RETVAL = rd_kafka_topic_partition_list_find(rktparlist, topic, partition);
-  OUTPUT:
-    RETVAL
+rd_kafka_topic_partition_list_find(RdKafka::TopicPartitionList rktparlist, const char *topic, int32_t partition)
 
 void
-DESTROY(RdKafka::TopicPartitionList list)
+rd_kafka_topic_partition_list_DESTROY(RdKafka::TopicPartitionList list)
   CODE:
 #ifdef PERL_RDKAFKA_DEBUG
     printf("DESTROY RdKafka::TopicPartitionList\n");
@@ -525,7 +416,7 @@ elems(RdKafka::TopicPartitionList list)
     RETVAL
 
 
-MODULE = RdKafka    PACKAGE = RdKafka::Message    PREFIX = rd_kafka_
+MODULE = RdKafka    PACKAGE = RdKafka::Message    PREFIX = rd_kafka_message_
 
 ## rd_kafka_resp_err_t err;   /**< Non-zero for error signaling. */
 ## rd_kafka_topic_t *rkt;     /**< Topic */
@@ -552,41 +443,51 @@ MODULE = RdKafka    PACKAGE = RdKafka::Message    PREFIX = rd_kafka_
 ##                                 *   each produced internal batch will
 ##                                 *   have this field set, otherwise 0. */
 
+### MESSAGES
 
-MODULE = RdKafka    PACKAGE = RdKafka::Conf
+## TODO: DESTROY?
+void
+rd_kafka_message_destroy(RdKafka::Message rkmessage)
 
+## TODO: maybe should do this in RdKafka::Message
+## static RD_INLINE const char *
+## RD_UNUSED 
+## rd_kafka_message_errstr(const rd_kafka_message_t *rkmessage) {
+## Gives a compile error, maybe because of the "static"
+## static const char *
+## rd_kafka_message_errstr(const rd_kafka_message_t *rkmessage)
+
+## TODO: maybe should do this in RdKafka::Message
+## (tstype is a pointer, meant as a 2nd return value)
+## int64_t
+## rd_kafka_message_timestamp(const RdKafka::Message rkmessage, OUT rd_kafka_timestamp_type_t tstype)
+
+
+
+MODULE = RdKafka    PACKAGE = RdKafka::Conf    PREFIX = rd_kafka_conf_
 
 ### CONFIGURATION
 
 RdKafka::Conf
-new(char *package)
-  CODE:
-    RETVAL = rd_kafka_conf_new();
-  OUTPUT:
-    RETVAL
+rd_kafka_conf_new(char *package)
+  C_ARGS:
 
 ## TODO (DESTROY?)
 ## I believe rd_kafka_new will normally destroy this itself (?)
 ## but I guess if rd_kafka_conf_dup is called...
 ## (should add something to DESTROY when it goes out of scope, though...)
 void
-destroy(RdKafka::Conf conf)
-  CODE:
-    rd_kafka_conf_destroy(conf);
+rd_kafka_conf_destroy(RdKafka::Conf conf)
 
 RdKafka::Conf
-dup(RdKafka::Conf conf)
-  CODE:
-    RETVAL = rd_kafka_conf_dup(conf);
-  OUTPUT:
-    RETVAL
+rd_kafka_conf_dup(RdKafka::Conf conf)
 
 ## rd_kafka_conf_res_t
 ## rd_kafka_conf_set(RdKafka::Conf conf, const char *name, const char *value, char *errstr, size_t errstr_size)
 ## TODO?
 ## just croaking on error for now
 void
-set(RdKafka::Conf conf, const char *name, const char *value)
+rd_kafka_conf_set(RdKafka::Conf conf, const char *name, const char *value)
   PREINIT:
     char buf[PERL_RDKAFKA_DEFAULT_ERRSTR_SIZE];
     rd_kafka_conf_res_t res;
@@ -656,18 +557,10 @@ set(RdKafka::Conf conf, const char *name, const char *value)
 ## #endif
 
 void
-set_opaque(RdKafka::Conf conf, void *opaque)
-  CODE:
-    rd_kafka_conf_set_opaque(conf, opaque);
-
-void *
-rd_kafka_opaque(RdKafka rk)
-## rd_kafka_opaque(const rd_kafka_t *rk)
+rd_kafka_conf_set_opaque(RdKafka::Conf conf, void *opaque)
 
 void
-set_default_topic_conf(RdKafka::Conf conf, RdKafka::TopicConf tconf)
-  CODE:
-    rd_kafka_conf_set_default_topic_conf(conf, tconf);
+rd_kafka_conf_set_default_topic_conf(RdKafka::Conf conf, RdKafka::TopicConf tconf)
 
 ## TODO: size_t * IN_OUT
 ## rd_kafka_conf_res_t
@@ -687,14 +580,14 @@ set_default_topic_conf(RdKafka::Conf conf, RdKafka::TopicConf tconf)
 ## rd_kafka_conf_dump_free(const char **arr, size_t cnt)
 
 void
-properties_show(RdKafka::Conf conf, FILE *fp)
-  CODE:
-    rd_kafka_conf_properties_show(fp);
+rd_kafka_conf_properties_show(RdKafka::Conf conf, FILE *fp)
+  C_ARGS:
+    fp
 
 ## rd_kafka_new destroys the conf, so can't call rd_kafka_conf_destroy.
 ## Not sure how to deal with that now.
 void
-DESTROY(RdKafka::Conf conf)
+rd_kafka_conf_DESTROY(RdKafka::Conf conf)
   CODE:
 #ifdef PERL_RDKAFKA_DEBUG
     printf("DESTROY RdKafka::Conf\n");
@@ -702,10 +595,34 @@ DESTROY(RdKafka::Conf conf)
     /* rd_kafka_conf_destroy(conf); */
 
 
-MODULE = RdKafka    PACKAGE = RdKafka::TopicConf    PREFIX = rd_kafka_
+MODULE = RdKafka    PACKAGE = RdKafka::TopicConf    PREFIX = rd_kafka_topic_conf_
+
+### TOPIC CONFIGURATION
+
+RdKafka::TopicConf 
+rd_kafka_topic_conf_new(char *package)
+  CODE:
+    RETVAL = rd_kafka_topic_conf_new();
+  OUTPUT:
+    RETVAL
+
+RdKafka::TopicConf 
+rd_kafka_topic_conf_dup(RdKafka::TopicConf conf)
+
+## TODO
+## rd_kafka_conf_res_t
+## rd_kafka_topic_conf_set(RdKafka::TopicConf conf, const char *name, const char *value, char *errstr, size_t errstr_size)
+
+## void
+## rd_kafka_topic_conf_set_opaque(RdKafka::TopicConf conf, void *opaque)
+
+## TODO
+## void
+## rd_kafka_topic_conf_set_partitioner_cb (RdKafka::TopicConf topic_conf, int32_t (*partitioner) (const rd_kafka_topic_t *rkt, const void *keydata, size_t keylen, int32_t partition_cnt, void *rkt_opaque, void *msg_opaque))
+
 
 void
-rd_kafka_DESTROY(RdKafka::TopicConf topic_conf)
+rd_kafka_topic_conf_DESTROY(RdKafka::TopicConf topic_conf)
   CODE:
 #ifdef PERL_RDKAFKA_DEBUG
     printf("DESTROY RdKafka::TopicConf\n");
@@ -713,22 +630,51 @@ rd_kafka_DESTROY(RdKafka::TopicConf topic_conf)
     /* rd_kafka_topic_conf_destroy(topic_conf); */
 
 
-### dupe PACKAGE name
-MODULE = RdKafka    PACKAGE = RdKafka    PREFIX = rd_kafka_
+MODULE = RdKafka    PACKAGE = RdKafka::Topic    PREFIX = rd_kafka_topic_
 
+## TODO: conf optional
+## * \p conf is an optional configuration for the topic created with
+## * `rd_kafka_topic_conf_new()` that will be used instead of the default
+## * topic configuration.
+## * The \p conf object is freed by this function and must not be used or
+## * destroyed by the application sub-sequently.
+## * See `rd_kafka_topic_conf_set()` et.al for more information.
+## *
+## * Topic handles are refcounted internally and calling rd_kafka_topic_new()
+## * again with the same topic name will return the previous topic handle
+## * without updating the original handle's configuration.
+## * Applications must eventually call rd_kafka_topic_destroy() for each
+## * succesfull call to rd_kafka_topic_new() to clear up resources.
+RdKafka::Topic
+rd_kafka_topic_new(char *package, RdKafka rk, const char *topic, RdKafka::TopicConf conf)
+  C_ARGS:
+    rk, topic, conf
+
+const char *
+rd_kafka_topic_name(RdKafka::Topic rkt)
+
+void *
+rd_kafka_topic_opaque(RdKafka::Topic rkt)
+#rd_kafka_topic_opaque(const rd_kafka_topic_t *rkt)
+
+### PARTITIONERS
+
+## TODO - deferred until rd_kafka_topic_new is wrapped
+## int
+## rd_kafka_topic_partition_available(const rd_kafka_topic_t *rkt, int32_t partition)
+
+## int32_t
+## rd_kafka_msg_partitioner_random(const rd_kafka_topic_t *rkt, const void *key, size_t keylen, int32_t partition_cnt, void *opaque, void *msg_opaque)
+
+## int32_t
+## rd_kafka_msg_partitioner_consistent(const rd_kafka_topic_t *rkt, const void *key, size_t keylen, int32_t partition_cnt, void *opaque, void *msg_opaque)
+
+## int32_t
+## rd_kafka_msg_partitioner_consistent_random(const rd_kafka_topic_t *rkt, const void *key, size_t keylen, int32_t partition_cnt, void *opaque, void *msg_opaque)
+
+## TODO: might have to do some tracking of objects
 void
-rd_kafka_DESTROY(RdKafka rk)
-  CODE:
-#ifdef PERL_RDKAFKA_DEBUG
-    printf("DESTROY RdKafka\n");
-#endif
-    rd_kafka_destroy(rk);  /* should do this? */
-
-
-MODULE = RdKafka    PACKAGE = RdKafka::Topic    PREFIX = rd_kafka_
-
-void
-rd_kafka_DESTROY(RdKafka::Topic rkt)
+DESTROY(RdKafka::Topic rkt)
   CODE:
 #ifdef PERL_RDKAFKA_DEBUG
     printf("DESTROY RdKafka::Topic\n");
@@ -736,15 +682,39 @@ rd_kafka_DESTROY(RdKafka::Topic rkt)
     rd_kafka_topic_destroy(rkt);
 
 
-MODULE = RdKafka    PACKAGE = RdKafka::GroupMember    PREFIX = rd_kafka_
+### https://cwiki.apache.org/confluence/display/KAFKA/A+Guide+To+The+Kafka+Protocol#AGuideToTheKafkaProtocol-GroupMembershipAPI
 
-MODULE = RdKafka    PACKAGE = RdKafka::GroupInfo    PREFIX = rd_kafka_
+MODULE = RdKafka    PACKAGE = RdKafka::GroupMemberInfo
 
-MODULE = RdKafka    PACKAGE = RdKafka::GroupList    PREFIX = rd_kafka_
+MODULE = RdKafka    PACKAGE = RdKafka::GroupInfo
 
-MODULE = RdKafka    PACKAGE = RdKafka::Event    PREFIX = rd_kafka_
+MODULE = RdKafka    PACKAGE = RdKafka::GroupList    PREFIX = rd_kafka_group_list_
 
-MODULE = RdKafka    PACKAGE = RdKafka::Queue    PREFIX = rd_kafka_
+MODULE = RdKafka    PACKAGE = RdKafka::Event    PREFIX = rd_kafka_event_
+
+MODULE = RdKafka    PACKAGE = RdKafka::Queue    PREFIX = rd_kafka_queue_
+
+### QUEUE API
+
+#  "See rd_kafka_consume_start_queue(), rd_kafka_consume_queue(), et.al."
+RdKafka::Queue
+rd_kafka_queue_new(char *package, RdKafka rk)
+  C_ARGS:
+    rk
+
+## TODO - after 0.9.2 installed
+#if RD_KAFKA_VERSION >= 0x000902ff
+
+void
+rd_kafka_queue_forward(RdKafka::Queue src, RdKafka::Queue dst)
+
+size_t
+rd_kafka_queue_length(RdKafka::Queue rkqu)
+
+void
+rd_kafka_queue_io_event_enable(RdKafka::Queue rkqu, int fd, const void *payload, size_t size)
+
+#endif   /* RD_KAFKA_VERSION >= 0x000902ff */
 
 void
 rd_kafka_DESTROY(RdKafka::Queue rkq)
