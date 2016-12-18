@@ -1,21 +1,4 @@
 
-
-### PRODUCER API
-
-int
-rd_kafka_produce(RdKafka::Topic rkt, int32_t partition, int msgflags, void *payload, size_t len, const void *key, size_t keylen, void *msg_opaque)
-
-## TODO: rkmessages should be an aref of RdKafka::Message
-int
-rd_kafka_produce_batch(RdKafka::Topic rkt, int32_t partition, int msgflags, RdKafka::Message rkmessages, int message_cnt)
-
-#if RD_KAFKA_VERSION >= 0x000902ff
-
-rd_kafka_resp_err_t
-rd_kafka_flush(RdKafka rk, int timeout_ms)
-
-#endif
-
 ### METADATA API
 
 rd_kafka_resp_err_t

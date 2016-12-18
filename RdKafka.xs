@@ -254,6 +254,13 @@ rd_kafka_commit_message(RdKafka rk, RdKafka::Message rkmessage, int async)
 ## rd_kafka_resp_err_t
 ## rd_kafka_position(RdKafka rk, RdKafka::TopicPartitionList partitions)
 
+#if RD_KAFKA_VERSION >= 0x000902ff
+
+rd_kafka_resp_err_t
+rd_kafka_flush(RdKafka rk, int timeout_ms)
+
+#endif
+
 void *
 rd_kafka_opaque(RdKafka rk)
 
@@ -682,6 +689,23 @@ rd_kafka_topic_opaque(RdKafka::Topic rkt)
 
 ## int32_t
 ## rd_kafka_msg_partitioner_consistent_random(const rd_kafka_topic_t *rkt, const void *key, size_t keylen, int32_t partition_cnt, void *opaque, void *msg_opaque)
+
+### PRODUCER API
+
+int
+produce(RdKafka::Topic rkt, int32_t partition, int msgflags, void *payload, size_t len, const void *key, size_t keylen, void *msg_opaque)
+  CODE:
+    RETVAL = rd_kafka_produce(rkt, partition, msgflags, payload, len, key, keylen, msg_opaque);
+  OUTPUT:
+    RETVAL
+
+## TODO: rkmessages should be an aref of RdKafka::Message
+int
+produce_batch(RdKafka::Topic rkt, int32_t partition, int msgflags, RdKafka::Message rkmessages, int message_cnt)
+  CODE:
+    RETVAL = rd_kafka_produce_batch(rkt, partition, msgflags, rkmessages, message_cnt);
+  OUTPUT:
+    RETVAL
 
 ## TODO: might have to do some tracking of objects
 void
