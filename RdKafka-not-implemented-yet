@@ -1,13 +1,4 @@
 
-### METADATA API
-
-rd_kafka_resp_err_t
-rd_kafka_metadata(RdKafka rk, int all_topics, RdKafka::Topic only_rkt, const struct rd_kafka_metadata **metadatap, int timeout_ms)
-
-void
-rd_kafka_metadata_destroy(const struct rd_kafka_metadata *metadata)
-
-
 ### CLIENT GROUP INFORMATION
 
 rd_kafka_resp_err_t

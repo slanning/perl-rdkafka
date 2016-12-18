@@ -23,10 +23,10 @@ typedef rd_kafka_topic_conf_t *RdKafka__TopicConf;
 typedef rd_kafka_topic_t *RdKafka__Topic;
 typedef rd_kafka_t *RdKafka;
 
+typedef struct rd_kafka_metadata *RdKafka__Metadata;
 typedef rd_kafka_metadata_broker_t *RdKafka__MetadataBroker;
 typedef rd_kafka_metadata_partition_t *RdKafka__MetadataPartition;
 typedef rd_kafka_metadata_topic_t *RdKafka__MetadataTopic;
-typedef rd_kafka_metadata_t *RdKafka__Metadata;
 typedef struct rd_kafka_group_member_info *RdKafka__GroupMemberInfo;
 typedef struct rd_kafka_group_info *RdKafka__GroupInfo;
 typedef struct rd_kafka_group_list *RdKafka__GroupList;
@@ -263,6 +263,13 @@ rd_kafka_flush(RdKafka rk, int timeout_ms)
 
 void *
 rd_kafka_opaque(RdKafka rk)
+
+
+### METADATA API
+
+## TODO: metadatap is in OUT param
+## rd_kafka_resp_err_t
+## rd_kafka_metadata(RdKafka rk, int all_topics, RdKafka::Topic only_rkt, RdKafka::Metadata *metadatap, int timeout_ms)
 
 void
 rd_kafka_DESTROY(RdKafka rk)
@@ -752,7 +759,7 @@ rd_kafka_queue_io_event_enable(RdKafka::Queue rkqu, int fd, const void *payload,
 #endif   /* RD_KAFKA_VERSION >= 0x000902ff */
 
 void
-rd_kafka_DESTROY(RdKafka::Queue rkq)
+rd_kafka_queue_DESTROY(RdKafka::Queue rkq)
   CODE:
 #ifdef PERL_RDKAFKA_DEBUG
     printf("DESTROY RdKafka::Queue\n");
@@ -760,6 +767,15 @@ rd_kafka_DESTROY(RdKafka::Queue rkq)
     rd_kafka_queue_destroy(rkq);
 
 
+MODULE = RdKafka    PACKAGE = RdKafka::Metadata    PREFIX = rd_kafka_metadata_
+
+void
+rd_kafka_metadata_DESTROY(RdKafka::Metadata metadata)
+  CODE:
+#ifdef PERL_RDKAFKA_DEBUG
+    printf("DESTROY RdKafka::Metadata\n");
+#endif
+    rd_kafka_metadata_destroy(metadata);
 
 
 ## why can there not be empty lines in BOOT now??
