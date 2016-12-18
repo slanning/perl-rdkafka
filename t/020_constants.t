@@ -5,7 +5,7 @@ use POSIX ();
 
 use RdKafka;
 
-use Test::More tests => 12;
+use Test::More tests => 11;
 
 
 # get_debug_contexts
@@ -22,14 +22,12 @@ like($debug_contexts, qr/^[a-z][a-z,]+[a-z]$/, "debug_contexts ($debug_contexts)
 {
 
 my $descs = RdKafka::get_err_descs() // [];
+ok(scalar(keys %$descs),                       "return value of get_err_descs has hash elements");
 
-ok(scalar(@$descs),                            "return value of get_err_descs has array elements");
-
-my $last_desc = $descs->[-1];
-ok(ref($last_desc),                            "return value of get_err_descs is a ref");
-like($last_desc->{code}, qr/^-?[0-9]+$/,       "last element's 'code' is an integer");
-ok($last_desc->{name},                         "last element's 'name' is something");
-ok($last_desc->{desc},                         "last element's 'desc' is something");
+my $desc = $descs->{0};
+ok(ref($desc),                            "0 keys of get_err_descs is a ref");
+ok($desc->{name},                         "0 element's 'name' is something ($desc->{name})");
+ok($desc->{desc},                         "0 element's 'desc' is something ($desc->{desc})");
 
 }
 

@@ -9,6 +9,9 @@ extern "C" {
 }
 #endif
 
+/* snprintf */
+#include <stdio.h>
+
 #include "librdkafka/rdkafka.h"
 
 
@@ -76,30 +79,38 @@ rd_kafka_get_debug_contexts(...)
 
 ## original:
 ## void rd_kafka_get_err_descs (const struct rd_kafka_err_desc **errdescs, size_t *cntp)
-## instead of IN/OUT params, just return an aref;
-## maybe should do { $code => { name => '...', desc => '...' } } instead of an aref of hashes
-AV *
+## returns an href like this { $code => { name => '...', desc => '...' } }
+SV *
 rd_kafka_get_err_descs(...)
-  CODE:
+  PREINIT:
     const struct rd_kafka_err_desc *errdesc;
     size_t cnt, i;
-    RETVAL = (AV *) sv_2mortal((SV *)newAV());  // AV* have to be made mortal
-
+    char hv_outer_key[8];
+    HV *hv_outer, *hv_inner;
+    SV *sv;
+  CODE:
     rd_kafka_get_err_descs(&errdesc, &cnt);
 
-    for (i = 0; i < cnt; ++i) {
-        HV *hv = (HV *) sv_2mortal((SV *) newHV());
+    hv_outer = newHV();
 
+    for (i = 0; i < cnt; ++i) {
         /* between -167 and -1 it's mostly empty (except -100) */
         if (errdesc[i].code == 0 && errdesc[i].name == NULL && errdesc[i].desc == NULL)
             continue;
 
-        hv_store(hv, "code", 4,   newSViv(errdesc[i].code),    0);
-        hv_store(hv, "name", 4,   newSVpv(errdesc[i].name, 0), 0);
-        hv_store(hv, "desc", 4,   newSVpv(errdesc[i].desc, 0), 0);
+        hv_inner = newHV();
+        sv = newSVpv(errdesc[i].name, 0);
+        if (!hv_store(hv_inner, "name", 4, sv, 0))
+            croak("hv_store (name) failed");
+        sv = newSVpv(errdesc[i].desc, 0);
+        if (!hv_store(hv_inner, "desc", 4, newSVpv(errdesc[i].desc, 0), 0))
+            croak("hv_store (desc) failed");
 
-        av_push(RETVAL, newRV((SV *) hv));
+        snprintf(hv_outer_key, 8, "%d", errdesc[i].code);
+        hv_store(hv_outer, hv_outer_key, strlen(hv_outer_key), newRV_noinc((SV *)hv_inner), 0);
     }
+    /* note: RETVAL is SV*, so automatically mortal */
+    RETVAL = newRV_noinc((SV *)hv_outer);
   OUTPUT:
     RETVAL
 
