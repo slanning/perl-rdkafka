@@ -280,6 +280,42 @@ rd_kafka_opaque(RdKafka rk)
 ## rd_kafka_list_groups(RdKafka rk, const char *group, RdKafka::GroupList *grplistp, int timeout_ms)
 
 
+### MISCELLANEOUS
+
+int
+rd_kafka_brokers_add(RdKafka rk, const char *brokerlist)
+
+## RD_EXPORT RD_DEPRECATED  - use rd_kafka_conf_set_log_cb
+## void rd_kafka_set_logger(RdKafka rk,
+##			  void (*func) (const rd_kafka_t *rk, int level,
+##					const char *fac, const char *buf));
+
+void
+rd_kafka_set_log_level(RdKafka rk, int level)
+
+void
+rd_kafka_log_print(RdKafka rk, int level, const char *fac, const char *buf)
+
+void
+rd_kafka_log_syslog(RdKafka rk, int level, const char *fac, const char *buf)
+
+int
+rd_kafka_outq_len(RdKafka rk)
+
+## TODO: make fp default to STDOUT?
+## switched the args so we do $rk->dump($fp)
+void
+rd_kafka_dump(RdKafka rk, FILE *fp)
+  C_ARGS:
+    fp, rk
+
+int
+rd_kafka_thread_cnt(...)
+
+## TODO: should it be a class method, or leave as a function?
+int
+rd_kafka_wait_destroyed(int timeout_ms)
+
 void
 rd_kafka_DESTROY(RdKafka rk)
   CODE:
@@ -288,6 +324,11 @@ rd_kafka_DESTROY(RdKafka rk)
 #endif
     rd_kafka_destroy(rk);  /* should do this? */
 
+
+### EXPERIMENTAL API
+
+rd_kafka_resp_err_t
+rd_kafka_poll_set_consumer(RdKafka rk)
 
 
 

@@ -1,44 +1,5 @@
 
 
-
-### MISCELLANEOUS
-
-int
-rd_kafka_brokers_add(RdKafka rk, const char *brokerlist)
-
-# RD_EXPORT RD_DEPRECATED
-# void rd_kafka_set_logger(RdKafka rk,
-#			  void (*func) (const rd_kafka_t *rk, int level,
-#					const char *fac, const char *buf));
-
-void
-rd_kafka_set_log_level(RdKafka rk, int level)
-
-void
-rd_kafka_log_print(const RdKafka rk, int level, const char *fac, const char *buf)
-
-void
-rd_kafka_log_syslog(const RdKafka rk, int level, const char *fac, const char *buf)
-
-int
-rd_kafka_outq_len(RdKafka rk)
-
-void
-rd_kafka_dump(FILE *fp, RdKafka rk)
-
-int
-rd_kafka_thread_cnt()
-
-int
-rd_kafka_wait_destroyed(int timeout_ms)
-
-
-### EXPERIMENTAL API
-
-rd_kafka_resp_err_t
-rd_kafka_poll_set_consumer(RdKafka rk)
-
-
 ### EVENTS INTERFACE
 
 #if RD_KAFKA_VERSION >= 0x000902ff
