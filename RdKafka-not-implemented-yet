@@ -1,11 +1,4 @@
 
-### CLIENT GROUP INFORMATION
-
-rd_kafka_resp_err_t
-rd_kafka_list_groups(RdKafka rk, const char *group, const struct rd_kafka_group_list **grplistp, int timeout_ms)
-
-void
-rd_kafka_group_list_destroy(const struct rd_kafka_group_list *grplist)
 
 
 ### MISCELLANEOUS

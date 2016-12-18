@@ -17,7 +17,10 @@ t/050_conf.t
 t/060_topic_conf.t
 t/070_partitioner.t
 t/100_main_handles.t
+t/110_metadata.t
+t/120_grouplist.t
 t/200_queue.t
 t/300_consumer.t
+t/310_producer.t
 TODO.txt
 typemap

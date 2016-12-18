@@ -271,6 +271,15 @@ rd_kafka_opaque(RdKafka rk)
 ## rd_kafka_resp_err_t
 ## rd_kafka_metadata(RdKafka rk, int all_topics, RdKafka::Topic only_rkt, RdKafka::Metadata *metadatap, int timeout_ms)
 
+
+### CLIENT GROUP INFORMATION
+## https://cwiki.apache.org/confluence/display/KAFKA/A+Guide+To+The+Kafka+Protocol#AGuideToTheKafkaProtocol-GroupMembershipAPI
+
+## TODO: grplistp is an OUT PARAM
+## rd_kafka_resp_err_t
+## rd_kafka_list_groups(RdKafka rk, const char *group, RdKafka::GroupList *grplistp, int timeout_ms)
+
+
 void
 rd_kafka_DESTROY(RdKafka rk)
   CODE:
@@ -731,6 +740,15 @@ MODULE = RdKafka    PACKAGE = RdKafka::GroupMemberInfo
 MODULE = RdKafka    PACKAGE = RdKafka::GroupInfo
 
 MODULE = RdKafka    PACKAGE = RdKafka::GroupList    PREFIX = rd_kafka_group_list_
+
+void
+rd_kafka_group_list_DESTROY(RdKafka::GroupList grplist)
+  CODE:
+#ifdef PERL_RDKAFKA_DEBUG
+    printf("DESTROY RdKafka::GroupList\n");
+#endif
+    rd_kafka_group_list_destroy(grplist);
+
 
 MODULE = RdKafka    PACKAGE = RdKafka::Event    PREFIX = rd_kafka_event_
 
