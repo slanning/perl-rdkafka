@@ -23,5 +23,6 @@ t/150_misc.t
 t/200_queue.t
 t/300_consumer.t
 t/310_producer.t
+t/400_event.t
 TODO.txt
 typemap

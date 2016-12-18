@@ -793,6 +793,56 @@ rd_kafka_group_list_DESTROY(RdKafka::GroupList grplist)
 
 MODULE = RdKafka    PACKAGE = RdKafka::Event    PREFIX = rd_kafka_event_
 
+### EVENTS INTERFACE
+
+#if RD_KAFKA_VERSION >= 0x000902ff
+
+rd_kafka_event_type_t
+rd_kafka_event_type(RdKafka::Event rkev)
+
+const char *
+rd_kafka_event_name(RdKafka::Event rkev)
+
+const RdKafka::Message
+rd_kafka_event_message_next(RdKafka::Event rkev)
+
+## size_t
+## rd_kafka_event_message_array(RdKafka::Event rkev, const rd_kafka_message_t **rkmessages, size_t size)
+
+size_t
+rd_kafka_event_message_count(RdKafka::Event rkev)
+
+rd_kafka_resp_err_t
+rd_kafka_event_error(RdKafka::Event rkev)
+
+const char *
+rd_kafka_event_error_string(RdKafka::Event rkev)
+
+void *
+rd_kafka_event_opaque(RdKafka::Event rkev)
+
+## TODO
+## int
+## rd_kafka_event_log(RdKafka::Event rkev, const char **fac, const char **str, int *level)
+
+RdKafka::TopicPartitionList
+rd_kafka_event_topic_partition_list(RdKafka::Event rkev)
+
+RdKafka::TopicPartition
+rd_kafka_event_topic_partition(RdKafka::Event rkev)
+
+## used to free the return value from rd_kafka_queue_poll
+void
+rd_kafka_event_DESTROY(RdKafka::Event rkev)
+  CODE:
+#ifdef PERL_RDKAFKA_DEBUG
+    printf("DESTROY RdKafka::Event\n");
+#endif
+    rd_kafka_event_destroy(rkev);
+
+#endif  /* RD_KAFKA_VERSION >= 0x000902ff */
+
+
 MODULE = RdKafka    PACKAGE = RdKafka::Queue    PREFIX = rd_kafka_queue_
 
 ### QUEUE API
@@ -814,6 +864,10 @@ rd_kafka_queue_length(RdKafka::Queue rkqu)
 
 void
 rd_kafka_queue_io_event_enable(RdKafka::Queue rkqu, int fd, const void *payload, size_t size)
+
+## (event API)
+RdKafka::Event
+rd_kafka_queue_poll(RdKafka::Queue rkqu, int timeout_ms)
 
 #endif   /* RD_KAFKA_VERSION >= 0x000902ff */
 
