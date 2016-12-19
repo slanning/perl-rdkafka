@@ -3,18 +3,58 @@ use strict;
 use warnings;
 use RdKafka qw/:enums/;
 
-use Test::More tests => 9;
+use Test::More tests => 14;
 
+# I can't see how to test that type isn't undef (gets treated as 0)
+#{
+#    local $SIG{__WARN__} = sub { };
+#
+#    my $test_name = "new with no args fails";
+#    eval {
+#        my $rk = RdKafka->new();
+#        fail($test_name);
+#        1;
+#    } or do {
+#        pass($test_name);
+#    };
+#}
+{
+    my $rk = RdKafka->new(RD_KAFKA_CONSUMER);
 
-## For now at least, the conf object is required (even if the default)
-## and this will croak if there's an error from rd_kafka_new.
-## I'd like to allow conf to be optional and errstr to hold an error,
-## but I haven't figured out how to do that.
+    ok(ref($rk), "new with type arg returns a ref");
+    my $expected_class = 'RdKafka';
+    is(ref($rk), $expected_class, "new ref isa '$expected_class'");
+}
+# this succeeds for whatever reason, even though 42 isn't valid
+# {
+#     my $rk = RdKafka->new(42);
+#     ok(ref($rk), "new returns a ref");
+#     my $expected_class = 'RdKafka';
+#     is(ref($rk), $expected_class, "new ref isa '$expected_class'");
+# }
+{
+    my $test_name = "RdKafka->new fails with invalid conf arg";
+    eval {
+        my $rk = RdKafka->new(RD_KAFKA_PRODUCER, []);
+        fail($test_name);
+        1;
+    } or do {
+        pass($test_name);
+    };
+}
 {
     my $conf = RdKafka::Conf->new();
     my $rk = RdKafka->new(RD_KAFKA_CONSUMER, $conf);
 
-    ok(ref($rk), "new returns a ref");
+    ok(ref($rk), "new with type and conf args returns a ref");
+    my $expected_class = 'RdKafka';
+    is(ref($rk), $expected_class, "new ref isa '$expected_class'");
+}
+{
+    my $conf = RdKafka::Conf->new();
+    my $rk = RdKafka->new(RD_KAFKA_CONSUMER, $conf, 2);
+
+    ok(ref($rk), "new with bogus errstr, who cares...");
     my $expected_class = 'RdKafka';
     is(ref($rk), $expected_class, "new ref isa '$expected_class'");
 }
@@ -23,7 +63,7 @@ use Test::More tests => 9;
 {
     my $conf = RdKafka::Conf->new();
     my $rk = RdKafka->new(RD_KAFKA_PRODUCER, $conf);
-    my $name = RdKafka::name($rk);
+    my $name = $rk->name;
     # for me it was: rdkafka#producer-2
     like($name, qr/\S/, "name isn't empty");
 }
@@ -31,7 +71,7 @@ use Test::More tests => 9;
 {
     my $conf = RdKafka::Conf->new();
     my $rk = RdKafka->new(RD_KAFKA_PRODUCER, $conf);
-    my $memberid = RdKafka::memberid($rk);
+    my $memberid = $rk->memberid;
     ok(!defined($memberid), "memberid isn't available...");
 
     # currently should free this here with mem_free

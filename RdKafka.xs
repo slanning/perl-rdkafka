@@ -11,6 +11,8 @@ extern "C" {
 
 /* snprintf */
 #include <stdio.h>
+/* bzero */
+#include <strings.h>
 
 #include "librdkafka/rdkafka.h"
 
@@ -37,25 +39,10 @@ typedef rd_kafka_queue_t *RdKafka__Queue;
 
 
 /* make this a compile flag? */
-#define PERL_RDKAFKA_DEBUG 1
+// #define PERL_RDKAFKA_DEBUG 1
 
 /* no idea what's reasonable - probably should be configurable somehow */
 #define PERL_RDKAFKA_DEFAULT_ERRSTR_SIZE 1024
-
-/* typemap INPUT macros - might not be needed (leftover from a wrong path taken) */
-
-/* T_PTROBJ_IN(conf, ST(1), rd_kafka_conf_t *, rd_kafka_conf_tPtr, new); */
-#define T_PTROBJ_IN(var, arg, type, ntype, func) STMT_START { \
-        if (SvROK(arg) && sv_derived_from(arg, #ntype)) {    \
-            IV tmp = SvIV((SV*) SvRV(arg)); \
-            var = INT2PTR(type, tmp); \
-        } else \
-            Perl_croak_nocontext("RdKafka::" #func ": $" #var " is not of type " #ntype); \
-    } STMT_END
-/* T_PV_IN(errstr, ST(1), const *); */
-#define T_PV_IN(var, arg, type) STMT_START { var = (type)SvPV_nolen(arg) } STMT_END
-#define T_UV_IN(var, arg, type) STMT_START { var = (type)SvUV(arg) } STMT_END
-
 
 MODULE = RdKafka    PACKAGE = RdKafka    PREFIX = rd_kafka_
 
@@ -132,22 +119,18 @@ rd_kafka_errno(...)
 
 ### MAIN HANDLES
 
-## originally:
+## original:
 ## rd_kafka_t *
 ## rd_kafka_new(rd_kafka_type_t type, rd_kafka_conf_t *conf, char *errstr, size_t errstr_size)
-## For now at least, the conf object is required (even if the default)
-## and this will croak if there's an error from rd_kafka_new.
-## I'd like to allow conf to be optional and errstr to hold an error,
-## but I haven't figured out how to do that.
-RdKafka 
-rd_kafka_new(char *package, rd_kafka_type_t type, RdKafka::Conf conf)
+## For now at least, this will croak if there's an error from rd_kafka_new.
+RdKafka
+rd_kafka_new_xs(rd_kafka_type_t type, RdKafka::Conf conf)
   PREINIT:
     char buf[PERL_RDKAFKA_DEFAULT_ERRSTR_SIZE];
-    RdKafka__Conf C_conf;
   CODE:
     RETVAL = rd_kafka_new(type, conf, buf, PERL_RDKAFKA_DEFAULT_ERRSTR_SIZE);
-    if (RETVAL == NULL)
-        croak("rd_kafka_new failed: %s", buf);
+    if (!RETVAL)   /* maybe should return &PL_sv_undef */
+        croak("RdKafka->new failed ERROR: %s\n", buf);
   OUTPUT:
     RETVAL
 

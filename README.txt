@@ -2,6 +2,9 @@ RdKafka - Perl bindings for librdkafka C library
 
 See https://github.com/edenhill/librdkafka for the C library.
 
+These Perl bindings are on github:
+https://github.com/slanning/perl-rdkafka
+
 
 INSTALLATION
 

@@ -9,6 +9,8 @@ use Carp;
 
 our $VERSION = '0.01';
 
+our $DEFAULT_ERRSTR_SIZE = 512;
+
 use XSLoader ();
 
 XSLoader::load(__PACKAGE__, $VERSION);
@@ -132,6 +134,16 @@ $EXPORT_TAGS{'all'} = [
 ];
 our @EXPORT_OK = @{ $EXPORT_TAGS{'all'} };
 our @EXPORT = ();
+
+
+sub new {
+    my ($class, $type, $conf) = @_;
+    $conf ||= RdKafka::Conf->new();
+
+    my $rk = new_xs($type, $conf);
+    return($rk);
+}
+
 
 1;
 __END__
