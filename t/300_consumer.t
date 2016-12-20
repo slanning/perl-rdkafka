@@ -1,16 +1,23 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use RdKafka;
+use RdKafka qw/:enums/;
 
-use Test::More tests => 1;
-ok(1,"a");
-
-## TODO: all the topic_partition_list-related ones are skipped for now
-
-# rd_kafka_subscribe
-# rd_kafka_unsubscribe
+use Test::More tests => 2;
 
 {
-    ;
+    my $rk = RdKafka->new(RD_KAFKA_CONSUMER);
+
+    my $topics = RdKafka::TopicPartitionList->new(2);
+    my @topic_partition_add = (
+        ["topic 1" => 0],
+        ["topic 2" => 0],
+    );
+    $topics->add(@$_) for @topic_partition_add;
+
+    my $errcode = $rk->subscribe($topics);
+    # not sure what it means yet
+    is($errcode, RD_KAFKA_RESP_ERR__UNKNOWN_GROUP, "subscribe RD_KAFKA_RESP_ERR__UNKNOWN_GROUP");
 }
+
+# examples/rdkafka_consumer_example.c

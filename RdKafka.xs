@@ -194,11 +194,8 @@ rd_kafka_queue_get_consumer(RdKafka rk)
 
 ### KAFKACONSUMER API
 
-## TODO: deferred topic_partition_list ones until that is handled properly
-## (there needs to be state info stored in stored in RdKafka::TopicPartitionList )
-
-## rd_kafka_resp_err_t
-## rd_kafka_subscribe(RdKafka rk, const RdKafka::TopicPartitionList topics)
+rd_kafka_resp_err_t
+rd_kafka_subscribe(RdKafka rk, RdKafka::TopicPartitionList topics)
 
 rd_kafka_resp_err_t
 rd_kafka_unsubscribe(RdKafka rk)
