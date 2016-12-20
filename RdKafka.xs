@@ -244,8 +244,12 @@ rd_kafka_flush(RdKafka rk, int timeout_ms)
 
 #endif
 
-void *
+VOIDBUFFER
 rd_kafka_opaque(RdKafka rk)
+  CODE:
+    RETVAL = (VOIDBUFFER)rd_kafka_opaque(rk);
+  OUTPUT:
+    RETVAL
 
 
 ### METADATA API
@@ -601,8 +605,9 @@ rd_kafka_conf_set(RdKafka::Conf conf, const char *name, const char *value)
 ## void rd_kafka_conf_set_open_cb(RdKafka::Conf conf, int (*open_cb) (const char *pathname, int flags, mode_t mode, void *opaque))
 ## #endif
 
+## "Sets the application's opaque pointer that will be passed to callbacks"
 void
-rd_kafka_conf_set_opaque(RdKafka::Conf conf, void *opaque)
+rd_kafka_conf_set_opaque(RdKafka::Conf conf, VOIDBUFFER opaque)
 
 void
 rd_kafka_conf_set_default_topic_conf(RdKafka::Conf conf, RdKafka::TopicConf tconf)
@@ -644,27 +649,24 @@ MODULE = RdKafka    PACKAGE = RdKafka::TopicConf    PREFIX = rd_kafka_topic_conf
 
 ### TOPIC CONFIGURATION
 
-RdKafka::TopicConf 
+RdKafka::TopicConf
 rd_kafka_topic_conf_new(char *package)
-  CODE:
-    RETVAL = rd_kafka_topic_conf_new();
-  OUTPUT:
-    RETVAL
+  C_ARGS:
 
-RdKafka::TopicConf 
+RdKafka::TopicConf
 rd_kafka_topic_conf_dup(RdKafka::TopicConf conf)
 
-## TODO
+## TODO: errstr+errstr_size
 ## rd_kafka_conf_res_t
 ## rd_kafka_topic_conf_set(RdKafka::TopicConf conf, const char *name, const char *value, char *errstr, size_t errstr_size)
 
-## void
-## rd_kafka_topic_conf_set_opaque(RdKafka::TopicConf conf, void *opaque)
+## strangely, rd_kafka_opaque (on RdKafka) is what fetches the opaque..
+void
+rd_kafka_topic_conf_set_opaque(RdKafka::TopicConf conf, VOIDBUFFER opaque)
 
 ## TODO
 ## void
-## rd_kafka_topic_conf_set_partitioner_cb (RdKafka::TopicConf topic_conf, int32_t (*partitioner) (const rd_kafka_topic_t *rkt, const void *keydata, size_t keylen, int32_t partition_cnt, void *rkt_opaque, void *msg_opaque))
-
+## rd_kafka_topic_conf_set_partitioner_cb(RdKafka::TopicConf topic_conf, int32_t (*partitioner) (const rd_kafka_topic_t *rkt, const void *keydata, size_t keylen, int32_t partition_cnt, void *rkt_opaque, void *msg_opaque))
 
 void
 rd_kafka_topic_conf_DESTROY(RdKafka::TopicConf topic_conf)
@@ -704,38 +706,9 @@ void *
 rd_kafka_topic_opaque(RdKafka::Topic rkt)
 #rd_kafka_topic_opaque(const rd_kafka_topic_t *rkt)
 
-### PARTITIONERS
-
-## TODO - deferred until rd_kafka_topic_new is wrapped
-## int
-## rd_kafka_topic_partition_available(const rd_kafka_topic_t *rkt, int32_t partition)
-
-## int32_t
-## rd_kafka_msg_partitioner_random(const rd_kafka_topic_t *rkt, const void *key, size_t keylen, int32_t partition_cnt, void *opaque, void *msg_opaque)
-
-## int32_t
-## rd_kafka_msg_partitioner_consistent(const rd_kafka_topic_t *rkt, const void *key, size_t keylen, int32_t partition_cnt, void *opaque, void *msg_opaque)
-
-## int32_t
-## rd_kafka_msg_partitioner_consistent_random(const rd_kafka_topic_t *rkt, const void *key, size_t keylen, int32_t partition_cnt, void *opaque, void *msg_opaque)
-
-### PRODUCER API
-
-## force void * to be char *
+## "This function must only be called from inside a partitioner function"
 int
-produce(RdKafka::Topic rkt, int32_t partition, int msgflags, VOIDBUFFER payload, size_t len, VOIDBUFFER key, size_t keylen, VOIDBUFFER msg_opaque)
-  CODE:
-    RETVAL = rd_kafka_produce(rkt, partition, msgflags, (void*)payload, len, (const void*)key, keylen, (void*)msg_opaque);
-  OUTPUT:
-    RETVAL
-
-## TODO: rkmessages should be an aref of RdKafka::Message
-int
-produce_batch(RdKafka::Topic rkt, int32_t partition, int msgflags, RdKafka::Message rkmessages, int message_cnt)
-  CODE:
-    RETVAL = rd_kafka_produce_batch(rkt, partition, msgflags, rkmessages, message_cnt);
-  OUTPUT:
-    RETVAL
+rd_kafka_topic_partition_available(RdKafka::Topic rkt, int32_t partition)
 
 ## TODO: might have to do some tracking of objects
 void
@@ -745,6 +718,32 @@ DESTROY(RdKafka::Topic rkt)
     printf("DESTROY RdKafka::Topic\n");
 #endif
     rd_kafka_topic_destroy(rkt);
+
+
+### N.B. the PREFIX here is special (package RdKafka::Topic is also above with PREFIX=rd_kafka_topic_)
+MODULE = RdKafka    PACKAGE = RdKafka::Topic    PREFIX = rd_kafka_
+
+int
+rd_kafka_produce(RdKafka::Topic rkt, int32_t partition, int msgflags, VOIDBUFFER payload, size_t len, VOIDBUFFER key, size_t keylen, VOIDBUFFER msg_opaque)
+
+## TODO: rkmessages should be an aref of RdKafka::Message
+int
+rd_kafka_produce_batch(RdKafka::Topic rkt, int32_t partition, int msgflags, RdKafka::Message rkmessages, int message_cnt)
+
+
+### N.B. the PREFIX here is special (package RdKafka::Topic is also above with PREFIX=rd_kafka_topic_)
+### this is to be able to use INTERFACE
+MODULE = RdKafka    PACKAGE = RdKafka::Topic    PREFIX = rd_kafka_
+
+### PARTITIONERS
+
+## TODO: maybe hide keylen; also could make opaque and msg_opaque optional
+int32_t
+interface_msg_partitioners(RdKafka::Topic rkt, VOIDBUFFER key, size_t keylen, int32_t partition_cnt, VOIDBUFFER opaque, VOIDBUFFER msg_opaque)
+  INTERFACE:
+    rd_kafka_msg_partitioner_random
+    rd_kafka_msg_partitioner_consistent
+    rd_kafka_msg_partitioner_consistent_random
 
 
 ### https://cwiki.apache.org/confluence/display/KAFKA/A+Guide+To+The+Kafka+Protocol#AGuideToTheKafkaProtocol-GroupMembershipAPI

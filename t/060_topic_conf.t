@@ -21,4 +21,3 @@ use Test::More tests => 4;
 #    my $conf = RdKafka::topic_conf_new();
 #    RdKafka::topic_conf_set($conf, "auto.offset.reset" => "smallest"   );
 #}
-

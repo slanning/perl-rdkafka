@@ -73,3 +73,16 @@ use Test::More tests => 7;
     # because the rd_kafka_conf_t struct is huge...
     # (making/maintaining accessors for it in XS will suck)
 }
+
+
+{
+    my $conf = RdKafka::Conf->new();
+    my $rk = RdKafka->new(RD_KAFKA_CONSUMER, $conf);
+
+    my $expected_opaque = "heyyyy";
+    $conf->set_opaque($expected_opaque);
+
+    # is this only useable in callbacks, or what?
+    #my $got_opaque = $rk->opaque;
+    #is($got_opaque, $expected_opaque, "got expected opaque ($got_opaque)");
+}
