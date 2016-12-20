@@ -343,6 +343,7 @@ rd_kafka_topic_partition_DESTROY(RdKafka::TopicPartition toppar)
        on elements in a topic-partition list
        rd_kafka_topic_partition_destroy(toppar);  */
 
+## TODO: needs setters, too
 ## struct rd_kafka_topic_partition_t accessors: topic, partition, offset, [metadata,] metadata_size(?), [opaque,] err
 
 char *
@@ -451,25 +452,11 @@ size(RdKafka::TopicPartitionList list)
   OUTPUT:
     RETVAL
 
-## TODO: I don't think this is right
-## I changed this from rd_kafka_topic_partition_t * to aref
-AV *
-elems(RdKafka::TopicPartitionList list)
+## sub elems is in RdKafka/TopicPartitionList.pm
+RdKafka::TopicPartition
+elem_n(RdKafka::TopicPartitionList list, int i)
   CODE:
-    RdKafka__TopicPartition toppar;
-    int cnt;
-    RETVAL = (AV *) sv_2mortal((SV *)newAV());  // AV* have to be made mortal
-
-    toppar = list->elems;
-    cnt = list->cnt;
-
-    while (--cnt >= 0) {
-        SV *sv = newSV(0);
-        sv_setref_pv(sv, "RdKafka::TopicPartition", toppar);
-        av_push(RETVAL, sv);
-
-        ++toppar;
-    }
+    RETVAL = &list->elems[i];
   OUTPUT:
     RETVAL
 

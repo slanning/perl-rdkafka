@@ -4,7 +4,7 @@ use warnings;
 use Data::Dumper;
 use RdKafka;
 
-use Test::More tests => 28;
+use Test::More tests => 27;
 
 {
     my $expected_allocated_size = 5;
@@ -67,12 +67,26 @@ use Test::More tests => 28;
 }
 
 {
-    ;
+    my $list = RdKafka::TopicPartitionList->new(5);
+
+    my $expected_topic = "test topic";
+    my $expected_partition = 1;
+    for (0 .. 3) {
+        $list->add($expected_topic . $_, $expected_partition);
+    }
+
+#    is(scalar(@{$list->elems}), 4, "elems has 4 elements");
+    is($list->cnt, 4, "list has 4 toppars");
+
     # TODO
-    ## rd_kafka_topic_partition_list_del_by_idx
-    # this deletes from the ->elems list by index;
-    # need to figure out how to do this properly
-    # esp with the struct accessor handling (rd_kafka_elems in RdKafka.xs)
+    # rd_kafka_topic_partition_list_del_by_idx deletes from the ->elems list by index.
+    # Need to figure out how to do this properly,
+    # esp with the struct accessor handling (rd_kafka_elems in RdKafka.xs).
+#    my $found = $list->del_by_idx(1);
+#    is($found, 1, "del_by_idx found toppar to delete");
+#    is($list->cnt, 3, "list cnt decremented");
+#    my $elems = $list->elems;
+#    is(scalar(@$elems), 3, "elems has 3 elements");
 }
 
 {
@@ -123,7 +137,7 @@ use Test::More tests => 28;
 sub test_list {
     my ($list, $expected_allocated_size) = @_;
 
-    ok(ref($list), "topic_partition_list_new returns a ref");
+    ok(ref($list), "TopicPartitionList new returns a ref");
     my $expected_class = 'RdKafka::TopicPartitionList';
     ok(ref($list) eq $expected_class, "topic_partition_list_new ref isa '$expected_class'");
 
@@ -135,6 +149,6 @@ sub test_list {
     my $allocated_size = $list->size;
     ok($allocated_size >= $expected_allocated_size, "size has at least the expected allocated size ($expected_allocated_size)");
 
-    my $element_aref = $list->elems;
-    is(scalar(@$element_aref), 0, "elems has no elements");
+#    my $element_aref = $list->elems;
+#    is(scalar(@$element_aref), 0, "elems has no elements");
 }
