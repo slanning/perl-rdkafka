@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use RdKafka qw/:enums/;
 
-use Test::More tests => 2;
+use Test::More tests => 1;
 
 {
     my $rk = RdKafka->new(RD_KAFKA_CONSUMER);

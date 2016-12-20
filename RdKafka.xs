@@ -37,6 +37,9 @@ typedef rd_kafka_event_t *RdKafka__Event;
 #endif
 typedef rd_kafka_queue_t *RdKafka__Queue;
 
+/* several things like payload, opaque, metadata... use void* which I assume from Perl to be a char* */
+typedef char *VOIDBUFFER;
+
 
 /* make this a compile flag? */
 // #define PERL_RDKAFKA_DEBUG 1
@@ -688,9 +691,11 @@ MODULE = RdKafka    PACKAGE = RdKafka::Topic    PREFIX = rd_kafka_topic_
 ## * Applications must eventually call rd_kafka_topic_destroy() for each
 ## * succesfull call to rd_kafka_topic_new() to clear up resources.
 RdKafka::Topic
-rd_kafka_topic_new(char *package, RdKafka rk, const char *topic, RdKafka::TopicConf conf)
-  C_ARGS:
-    rk, topic, conf
+rd_kafka_topic_new_xs(char *package, RdKafka rk, const char *topic, RdKafka::TopicConf conf)
+  CODE:
+    RETVAL = rd_kafka_topic_new(rk, topic, conf);
+  OUTPUT:
+    RETVAL
 
 const char *
 rd_kafka_topic_name(RdKafka::Topic rkt)
@@ -716,10 +721,11 @@ rd_kafka_topic_opaque(RdKafka::Topic rkt)
 
 ### PRODUCER API
 
+## force void * to be char *
 int
-produce(RdKafka::Topic rkt, int32_t partition, int msgflags, void *payload, size_t len, const void *key, size_t keylen, void *msg_opaque)
+produce(RdKafka::Topic rkt, int32_t partition, int msgflags, VOIDBUFFER payload, size_t len, VOIDBUFFER key, size_t keylen, VOIDBUFFER msg_opaque)
   CODE:
-    RETVAL = rd_kafka_produce(rkt, partition, msgflags, payload, len, key, keylen, msg_opaque);
+    RETVAL = rd_kafka_produce(rkt, partition, msgflags, (void*)payload, len, (const void*)key, keylen, (void*)msg_opaque);
   OUTPUT:
     RETVAL
 
@@ -829,8 +835,9 @@ rd_kafka_queue_forward(RdKafka::Queue src, RdKafka::Queue dst)
 size_t
 rd_kafka_queue_length(RdKafka::Queue rkqu)
 
+## payload was "const void *"
 void
-rd_kafka_queue_io_event_enable(RdKafka::Queue rkqu, int fd, const void *payload, size_t size)
+rd_kafka_queue_io_event_enable(RdKafka::Queue rkqu, int fd, VOIDBUFFER payload, size_t size)
 
 ## (event API)
 RdKafka::Event

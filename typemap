@@ -43,10 +43,8 @@ RdKafka::GroupList T_PTROBJ
 RdKafka::Event T_PTROBJ
 RdKafka::Queue T_PTROBJ
 
-# lib/ExtUtils/typemap has "void * T_PTR";
-# not sure yet if that's what I should use here, though
-# (but this compiles, at least)
-const void * T_PTR
+# this is really char*
+VOIDBUFFER T_PV
 
 
 ## Perl --> C

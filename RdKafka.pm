@@ -15,6 +15,9 @@ use XSLoader ();
 
 XSLoader::load(__PACKAGE__, $VERSION);
 
+require RdKafka::Topic;
+require RdKafka::TopicPartitionList;
+
 our %EXPORT_TAGS = (
     producer => [qw/
         RD_KAFKA_MSG_F_FREE
