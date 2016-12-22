@@ -4,6 +4,10 @@
 #
 # where the .h file is a copy of rdkafka.h from a particular version of librdkafka.
 # (The parsing depends on the location being the "genscripts/" directory.)
+#
+# Example usage:
+# ./genscripts/parse-xml.pl < genscripts/rdkafka-0.9.1.xml
+
 use strict;
 use warnings;
 use Data::Dumper; { package Data::Dumper; our ($Indent, $Sortkeys, $Terse, $Useqq) = (1)x4 }
@@ -57,11 +61,11 @@ sub nodes_with_id {
     return(@id_nodes);
 }
 
-sub header_file_id {
-    my ($root) = @_;
+sub header_file_id_matching {
+    my ($root, $regex) = @_;
     my @File_nodes = $root->getChildrenByTagName('File');
 
-    my ($header_file_node) = grep { $_->getAttribute('name') =~ m{\bgenscripts/} } @File_nodes;
+    my ($header_file_node) = grep { $_->getAttribute('name') =~ $regex } @File_nodes;
     unless ($header_file_node) {
         die "Didn't find header File node";
     }
@@ -73,7 +77,7 @@ sub header_file_id {
 sub top_nodes_from_header_file {
     my ($root) = @_;
 
-    my $header_file_id = header_file_id($root);
+    my $header_file_id = header_file_id_matching($root, qr{/rdkafka\.h$});
     my @child_element_nodes = child_element_nodes($root);
     my @nodes = grep { ($_->getAttribute('file') // '') eq $header_file_id } @child_element_nodes;
     return(@nodes);

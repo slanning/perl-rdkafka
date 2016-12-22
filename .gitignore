@@ -1,6 +1,7 @@
 *~
 *.bs
 *.c
+!genscripts/*.c
 *.o
 MYMETA.json
 MYMETA.yml
