@@ -21,10 +21,11 @@ exit;
 sub main {
     my $root = root_node();
 
-    my @top_nodes = top_nodes_from_header_file($root);
+    my @nodes = top_nodes_from_header_file($root, qr{/rdkafka\.h$});
+    push @nodes, top_nodes_from_header_file($root, qr{/rdkafka_conf\.h$});
     my $nodes_by_id = nodes_by_id($root);
 
-    process_top_nodes(\@top_nodes, $nodes_by_id);
+    process_top_nodes(\@nodes, $nodes_by_id);
 }
 
 sub root_node {
@@ -75,9 +76,9 @@ sub header_file_id_matching {
 }
 
 sub top_nodes_from_header_file {
-    my ($root) = @_;
+    my ($root, $matching) = @_;
 
-    my $header_file_id = header_file_id_matching($root, qr{/rdkafka\.h$});
+    my $header_file_id = header_file_id_matching($root, $matching);
     my @child_element_nodes = child_element_nodes($root);
     my @nodes = grep { ($_->getAttribute('file') // '') eq $header_file_id } @child_element_nodes;
     return(@nodes);
@@ -193,16 +194,29 @@ sub link_structs {
         # the members of the struct
         my @member_ids = split(' ', ($struct->{members} // ''));
         foreach my $member_id (@member_ids) {
-            my $field = $fields->{$member_id}
-              or die("Struct '$struct_id' member '$member_id' not found");
+            my $member_node = $nodes_by_id->{$member_id};
+            my $node_name = $member_node->nodeName;
 
-            my $type_data = lookup_type($field->{type}, $nodes_by_id);
+            if ($node_name eq 'Field') {
+                my $field = $fields->{$member_id};
+                my $type_data = lookup_type($field->{type}, $nodes_by_id);
 
-            push @{ $struct->{fields} }, {
-                name       => $field->{name},
-                member_id  => $member_id,
-                type       => $type_data,
-            };
+                push @{ $struct->{fields} }, {
+                    name       => $field->{name},
+                    member_id  => $member_id,
+                    type       => $type_data,
+                };
+            }
+            elsif ($node_name eq 'Struct') {
+                push @{ $struct->{fields} }, {
+                    member_id  => $member_id,
+                    node_name  => $node_name,
+                    ignored    => 1,
+                };
+            }
+            else {
+                die("Struct '$struct_id' member '$member_id' not found");
+            }
         }
     }
 }
@@ -311,7 +325,6 @@ sub cb_Enumeration {
     return($id => \%attr);
 }
 
-# might need to be by id instead of name (maybe should redo them all by id)
 sub cb_Field {
     my ($node) = @_;
     my $id = $node->getAttribute('id');
@@ -339,12 +352,6 @@ sub cb_Function {
 sub cb_Struct {
     my ($node) = @_;
     my $id = $node->getAttribute('id');
-
-    # Struct elements will probably be generally gnarly.
-    # Some structs are defined in other header files,
-    # when <Struct ... incomplete="1"> and name ends with "_s".
-    # Those also have a corresponding <Typedef> whose name ends with "_t".
-    # I guess I'll just do those manually.
 
     my %attr = map +($_ => $node->getAttribute($_)), qw/incomplete members name/;
 
