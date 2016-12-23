@@ -112,6 +112,18 @@ our %EXPORT_TAGS = (
         RD_KAFKA_CONF_OK
           /,
     ],
+    # I also saw in the source: LOG_PID LOG_CONS
+    # but I think they aren't needed from Perl
+    syslog => [qw/
+        LOG_EMERG
+        LOG_ALERT
+        LOG_CRIT
+        LOG_ERR
+        LOG_WARNING
+        LOG_NOTICE
+        LOG_INFO
+        LOG_DEBUG
+    /],
 );
 
 if (RdKafka::version() >= 0x000902ff) {

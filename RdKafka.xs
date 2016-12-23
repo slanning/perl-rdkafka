@@ -1,20 +1,25 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
 #include "ppport.h"
-#ifdef __cplusplus
-}
-#endif
 
-/* snprintf */
+/* snprintf, tmpfile, rewind, fscanf, fclose */
 #include <stdio.h>
 /* bzero */
 #include <strings.h>
 
+/* LOG_DEBUG etc. constants - is this OK on windows? */
+#include <sys/syslog.h>
+
 #include "librdkafka/rdkafka.h"
+
+#ifdef __cplusplus
+}
+#endif
 
 
 typedef rd_kafka_topic_partition_t *RdKafka__TopicPartition;
@@ -40,12 +45,20 @@ typedef rd_kafka_queue_t *RdKafka__Queue;
 /* several things like payload, opaque, metadata... use void* which I assume from Perl to be a char* */
 typedef char *VOIDBUFFER;
 
+#ifdef PerlIO
+typedef PerlIO * OutputStream;
+#else
+typedef FILE * OutputStream;
+#endif
 
 /* make this a compile flag? */
 // #define PERL_RDKAFKA_DEBUG 1
 
 /* no idea what's reasonable - probably should be configurable somehow */
 #define PERL_RDKAFKA_DEFAULT_ERRSTR_SIZE 1024
+
+#define PERL_RDKAFKA_READ_BUF_SIZE 512
+
 
 MODULE = RdKafka    PACKAGE = RdKafka    PREFIX = rd_kafka_
 
@@ -269,6 +282,7 @@ rd_kafka_opaque(RdKafka rk)
 
 ### MISCELLANEOUS
 
+## default broker list is in conf: bootstrap.servers (or metadata.broker.list)
 int
 rd_kafka_brokers_add(RdKafka rk, const char *brokerlist)
 
@@ -277,6 +291,7 @@ rd_kafka_brokers_add(RdKafka rk, const char *brokerlist)
 ##			  void (*func) (const rd_kafka_t *rk, int level,
 ##					const char *fac, const char *buf));
 
+## log levels seem to be from syslog.h
 void
 rd_kafka_set_log_level(RdKafka rk, int level)
 
@@ -289,12 +304,47 @@ rd_kafka_log_syslog(RdKafka rk, int level, const char *fac, const char *buf)
 int
 rd_kafka_outq_len(RdKafka rk)
 
-## TODO: make fp default to STDOUT?
-## switched the args so we do $rk->dump($fp)
+## TODO: make fp default to STDOUT/STDERR?
+## This handles fp_sv specially,
+## because the typemap for FILE * doesn't work
+## with in particular the $fh from open(my $fh, ">", \$buf)
 void
-rd_kafka_dump(RdKafka rk, FILE *fp)
-  C_ARGS:
-    fp, rk
+rd_kafka_dump(RdKafka rk, SV *fp_sv)
+  PREINIT:
+    IO *iop;
+  CODE:
+    iop = sv_2io(fp_sv);
+
+    if (iop) {
+        PerlIO *perliop;
+        perliop = IoOFP(iop);
+
+        if (perliop) {
+            FILE *fp;
+            fp = PerlIO_findFILE(perliop);
+
+            if (fp) {
+                rd_kafka_dump(fp, rk);
+            } else {
+                char buf[PERL_RDKAFKA_READ_BUF_SIZE];
+
+                fp = tmpfile();
+                rd_kafka_dump(fp, rk);
+                rewind(fp);
+                for (;;) {
+                    size_t n = fread(buf, 1, PERL_RDKAFKA_READ_BUF_SIZE, fp);
+                    PerlIO_write(perliop, buf, n);
+                    if (n < PERL_RDKAFKA_READ_BUF_SIZE)
+                        break;
+                }
+                fclose(fp);
+            }
+        } else {
+            warn("Couldn't dump to filehandle (perliop NULL)\n");
+        }
+    } else {
+        warn("Couldn't dump to filehandle (iop NULL)\n");
+    }
 
 int
 rd_kafka_thread_cnt(...)
@@ -643,6 +693,15 @@ rd_kafka_conf_DESTROY(RdKafka::Conf conf)
     printf("DESTROY RdKafka::Conf\n");
 #endif
     /* rd_kafka_conf_destroy(conf); */
+
+## struct rd_kafka_conf_t accessors: (many... not all exposed here yet; it's not totally part of the public API)
+
+int
+cnt(RdKafka::TopicPartitionList list)
+  CODE:
+    RETVAL = list->cnt;
+  OUTPUT:
+    RETVAL
 
 
 MODULE = RdKafka    PACKAGE = RdKafka::TopicConf    PREFIX = rd_kafka_topic_conf_
@@ -1003,4 +1062,31 @@ BOOT:
   newCONSTSUB(stash, "RD_KAFKA_RESP_ERR_ILLEGAL_SASL_STATE", newSViv(RD_KAFKA_RESP_ERR_ILLEGAL_SASL_STATE));
   newCONSTSUB(stash, "RD_KAFKA_RESP_ERR_UNSUPPORTED_VERSION", newSViv(RD_KAFKA_RESP_ERR_UNSUPPORTED_VERSION));
   newCONSTSUB(stash, "RD_KAFKA_RESP_ERR_END_ALL", newSViv(RD_KAFKA_RESP_ERR_END_ALL));
+  /*
+    SYSLOG
+   */
+#ifdef LOG_EMERG
+  newCONSTSUB(stash, "LOG_EMERG", newSViv(LOG_EMERG));
+#endif
+#ifdef LOG_ALERT
+  newCONSTSUB(stash, "LOG_ALERT", newSViv(LOG_ALERT));
+#endif
+#ifdef LOG_CRIT
+  newCONSTSUB(stash, "LOG_CRIT", newSViv(LOG_CRIT));
+#endif
+#ifdef LOG_ERR
+  newCONSTSUB(stash, "LOG_ERR", newSViv(LOG_ERR));
+#endif
+#ifdef LOG_WARNING
+  newCONSTSUB(stash, "LOG_WARNING", newSViv(LOG_WARNING));
+#endif
+#ifdef LOG_NOTICE
+  newCONSTSUB(stash, "LOG_NOTICE", newSViv(LOG_NOTICE));
+#endif
+#ifdef LOG_INFO
+  newCONSTSUB(stash, "LOG_INFO", newSViv(LOG_INFO));
+#endif
+#ifdef LOG_DEBUG
+  newCONSTSUB(stash, "LOG_DEBUG", newSViv(LOG_DEBUG));
+#endif
     }

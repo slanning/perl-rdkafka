@@ -13,6 +13,7 @@ t/020_constants.t
 t/021_exporter_class_enums.t
 t/022_exporter_class_producer.t
 t/023_exporter_class_event.t
+t/024_exporter_class_syslog.t
 t/030_topic_partition.t
 t/040_message.t
 t/050_conf.t
