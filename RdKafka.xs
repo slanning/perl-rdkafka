@@ -21,6 +21,185 @@ extern "C" {
 }
 #endif
 
+/* crazy? copied from src/rdkafka_conf.h v0.9.2 - partly manually edited to remove unknown types */
+struct rd_kafka_conf_s {
+	/*
+	 * Generic configuration
+	 */
+	int     enabled_events;
+	int     max_msg_size;
+	int     msg_copy_max_size;
+        int     recv_max_msg_size;
+	int     max_inflight;
+	int     metadata_request_timeout_ms;
+	int     metadata_refresh_interval_ms;
+	int     metadata_refresh_fast_cnt;
+	int     metadata_refresh_fast_interval_ms;
+        int     metadata_refresh_sparse;
+	int     debug;
+	int     broker_addr_ttl;
+        int     broker_addr_family;
+	int     socket_timeout_ms;
+	int     socket_blocking_max_ms;
+	int     socket_sndbuf_size;
+	int     socket_rcvbuf_size;
+        int     socket_keepalive;
+        int     socket_max_fails;
+	char   *client_id_str;
+/*        rd_kafkap_str_t *client_id; */
+	char   *brokerlist;
+	int     stats_interval_ms;
+	int     term_sig;
+        int     reconnect_jitter_ms;
+	int     api_version_request;
+	int     api_version_fallback_ms;
+	char   *broker_version_fallback;
+/*	rd_kafka_secproto_t security_protocol; */
+
+#if WITH_SSL
+	struct {
+		SSL_CTX *ctx;
+		char *cipher_suites;
+		char *key_location;
+		char *key_password;
+		char *cert_location;
+		char *ca_location;
+		char *crl_location;
+	} ssl;
+#endif
+
+#if WITH_SASL
+	struct {
+		char *principal;
+		char *mechanisms;
+		char *service_name;
+		char *kinit_cmd;
+		char *keytab;
+		int   relogin_min_time;
+		char *username;
+		char *password;
+	} sasl;
+#endif
+
+
+        /* Client group configuration */
+        int    coord_query_intvl_ms;
+
+	int    builtin_features;
+	/*
+	 * Consumer configuration
+	 */
+	int    queued_min_msgs;
+        int    queued_max_msg_kbytes;
+        int64_t queued_max_msg_bytes;
+	int    fetch_wait_max_ms;
+        int    fetch_msg_max_bytes;
+	int    fetch_min_bytes;
+	int    fetch_error_backoff_ms;
+        char  *group_id_str;
+/*        rd_kafkap_str_t   *group_id; */   /* Consumer group id */
+
+/*        rd_kafka_pattern_list_t *topic_blacklist; */
+        struct rd_kafka_topic_conf_s *topic_conf; /* Default topic config
+                                                   * for automatically
+                                                   * subscribed topics. */
+        int enable_auto_commit;
+	int enable_auto_offset_store;
+        int auto_commit_interval_ms;
+        int group_session_timeout_ms;
+        int group_heartbeat_intvl_ms;
+/*        rd_kafkap_str_t *group_protocol_type; */
+        char *partition_assignment_strategy;
+/*        rd_list_t partition_assignors; */
+	int enabled_assignor_cnt;
+/*        struct rd_kafka_assignor_s *assignor; */
+
+        void (*rebalance_cb) (rd_kafka_t *rk,
+                              rd_kafka_resp_err_t err,
+			      rd_kafka_topic_partition_list_t *partitions,
+                              void *opaque);
+
+        void (*offset_commit_cb) (rd_kafka_t *rk,
+                                  rd_kafka_resp_err_t err,
+                                  rd_kafka_topic_partition_list_t *offsets,
+                                  void *opaque);
+
+/*        rd_kafka_offset_method_t offset_store_method; */
+	int enable_partition_eof;
+
+	/*
+	 * Producer configuration
+	 */
+	int    queue_buffering_max_msgs;
+	int    queue_buffering_max_kbytes;
+	int    buffering_max_ms;
+	int    max_retries;
+	int    retry_backoff_ms;
+	int    batch_num_messages;
+/*	rd_kafka_compression_t compression_codec; */
+	int    dr_err_only;
+
+	/* Message delivery report callback.
+	 * Called once for each produced message, either on
+	 * successful and acknowledged delivery to the broker in which
+	 * case 'err' is 0, or if the message could not be delivered
+	 * in which case 'err' is non-zero (use rd_kafka_err2str()
+	 * to obtain a human-readable error reason).
+	 *
+	 * If the message was produced with neither RD_KAFKA_MSG_F_FREE
+	 * or RD_KAFKA_MSG_F_COPY set then 'payload' is the original
+	 * pointer provided to rd_kafka_produce().
+	 * rdkafka will not perform any further actions on 'payload'
+	 * at this point and the application may rd_free the payload data
+	 * at this point.
+	 *
+	 * 'opaque' is 'conf.opaque', while 'msg_opaque' is
+	 * the opaque pointer provided in the rd_kafka_produce() call.
+	 */
+	void (*dr_cb) (rd_kafka_t *rk,
+		       void *payload, size_t len,
+		       rd_kafka_resp_err_t err,
+		       void *opaque, void *msg_opaque);
+
+        void (*dr_msg_cb) (rd_kafka_t *rk, const rd_kafka_message_t *rkmessage,
+                           void *opaque);
+
+        /* Consume callback */
+        void (*consume_cb) (rd_kafka_message_t *rkmessage, void *opaque);
+
+	/* Error callback */
+	void (*error_cb) (rd_kafka_t *rk, int err,
+			  const char *reason, void *opaque);
+
+	/* Throttle callback */
+	void (*throttle_cb) (rd_kafka_t *rk, const char *broker_name,
+			     int32_t broker_id, int throttle_time_ms,
+			     void *opaque);
+
+	/* Stats callback */
+	int (*stats_cb) (rd_kafka_t *rk,
+			 char *json,
+			 size_t json_len,
+			 void *opaque);
+
+        /* Log callback */
+        void (*log_cb) (const rd_kafka_t *rk, int level,
+                        const char *fac, const char *buf);
+        int    log_level;
+	int    log_thread_name;
+        int    log_connection_close;
+
+        /* Socket creation callback */
+        int (*socket_cb) (int domain, int type, int protocol, void *opaque);
+
+		/* File open callback */
+        int (*open_cb) (const char *pathname, int flags, mode_t mode,
+                        void *opaque);
+
+	/* Opaque passed to callbacks. */
+	void  *opaque;
+};
+
 
 typedef rd_kafka_topic_partition_t *RdKafka__TopicPartition;
 typedef rd_kafka_topic_partition_list_t *RdKafka__TopicPartitionList;
@@ -694,14 +873,557 @@ rd_kafka_conf_DESTROY(RdKafka::Conf conf)
 #endif
     /* rd_kafka_conf_destroy(conf); */
 
-## struct rd_kafka_conf_t accessors: (many... not all exposed here yet; it's not totally part of the public API)
+## struct rd_kafka_conf_t accessors: (many... not all exposed here yet; it's not really part of the public API)
 
 int
-cnt(RdKafka::TopicPartitionList list)
+max_msg_size(RdKafka::Conf conf)
   CODE:
-    RETVAL = list->cnt;
+    RETVAL = conf->max_msg_size;
   OUTPUT:
     RETVAL
+
+int
+recv_max_msg_size(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->recv_max_msg_size;
+  OUTPUT:
+    RETVAL
+
+int
+max_inflight(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->max_inflight;
+  OUTPUT:
+    RETVAL
+
+int
+metadata_request_timeout_ms(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->metadata_request_timeout_ms;
+  OUTPUT:
+    RETVAL
+
+int
+metadata_refresh_interval_ms(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->metadata_refresh_interval_ms;
+  OUTPUT:
+    RETVAL
+
+int
+metadata_refresh_fast_cnt(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->metadata_refresh_fast_cnt;
+  OUTPUT:
+    RETVAL
+
+int
+metadata_refresh_fast_interval_ms(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->metadata_refresh_fast_interval_ms;
+  OUTPUT:
+    RETVAL
+
+int
+metadata_refresh_sparse(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->metadata_refresh_sparse;
+  OUTPUT:
+    RETVAL
+
+int
+debug(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->debug;
+  OUTPUT:
+    RETVAL
+
+int
+broker_addr_ttl(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->broker_addr_ttl;
+  OUTPUT:
+    RETVAL
+
+int
+broker_addr_family(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->broker_addr_family;
+  OUTPUT:
+    RETVAL
+
+int
+socket_timeout_ms(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->socket_timeout_ms;
+  OUTPUT:
+    RETVAL
+
+int
+socket_blocking_max_ms(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->socket_blocking_max_ms;
+  OUTPUT:
+    RETVAL
+
+int
+socket_sndbuf_size(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->socket_sndbuf_size;
+  OUTPUT:
+    RETVAL
+
+int
+socket_rcvbuf_size(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->socket_rcvbuf_size;
+  OUTPUT:
+    RETVAL
+
+int
+socket_keepalive(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->socket_keepalive;
+  OUTPUT:
+    RETVAL
+
+int
+socket_max_fails(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->socket_max_fails;
+  OUTPUT:
+    RETVAL
+
+char *
+client_id_str(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->client_id_str;
+  OUTPUT:
+    RETVAL
+
+## rd_kafkap_str_t *
+## client_id(RdKafka::Conf conf)
+##   CODE:
+##     RETVAL = conf->client_id;
+##   OUTPUT:
+##     RETVAL
+
+char *
+brokerlist(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->brokerlist;
+  OUTPUT:
+    RETVAL
+
+int
+stats_interval_ms(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->stats_interval_ms;
+  OUTPUT:
+    RETVAL
+
+int
+term_sig(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->term_sig;
+  OUTPUT:
+    RETVAL
+
+int
+reconnect_jitter_ms(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->reconnect_jitter_ms;
+  OUTPUT:
+    RETVAL
+
+int
+api_version_request(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->api_version_request;
+  OUTPUT:
+    RETVAL
+
+int
+api_version_fallback_ms(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->api_version_fallback_ms;
+  OUTPUT:
+    RETVAL
+
+char *
+broker_version_fallback(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->broker_version_fallback;
+  OUTPUT:
+    RETVAL
+
+## rd_kafka_secproto_t
+## security_protocol(RdKafka::Conf conf)
+##   CODE:
+##     RETVAL = conf->security_protocol;
+##   OUTPUT:
+##     RETVAL
+
+## struct 
+## ssl(RdKafka::Conf conf)
+##   CODE:
+##     RETVAL = conf->ssl;
+##   OUTPUT:
+##     RETVAL
+
+int
+coord_query_intvl_ms(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->coord_query_intvl_ms;
+  OUTPUT:
+    RETVAL
+
+int
+builtin_features(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->builtin_features;
+  OUTPUT:
+    RETVAL
+
+int
+queued_min_msgs(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->queued_min_msgs;
+  OUTPUT:
+    RETVAL
+
+int
+queued_max_msg_kbytes(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->queued_max_msg_kbytes;
+  OUTPUT:
+    RETVAL
+
+int64_t
+queued_max_msg_bytes(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->queued_max_msg_bytes;
+  OUTPUT:
+    RETVAL
+
+int
+fetch_wait_max_ms(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->fetch_wait_max_ms;
+  OUTPUT:
+    RETVAL
+
+int
+fetch_msg_max_bytes(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->fetch_msg_max_bytes;
+  OUTPUT:
+    RETVAL
+
+int
+fetch_min_bytes(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->fetch_min_bytes;
+  OUTPUT:
+    RETVAL
+
+int
+fetch_error_backoff_ms(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->fetch_error_backoff_ms;
+  OUTPUT:
+    RETVAL
+
+char *
+group_id_str(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->group_id_str;
+  OUTPUT:
+    RETVAL
+
+## rd_kafkap_str_t *
+## group_id(RdKafka::Conf conf)
+##   CODE:
+##     RETVAL = conf->group_id;
+##   OUTPUT:
+##     RETVAL
+
+## rd_kafka_pattern_list_t *
+## topic_blacklist(RdKafka::Conf conf)
+##   CODE:
+##     RETVAL = conf->topic_blacklist;
+##   OUTPUT:
+##     RETVAL
+
+## struct rd_kafka_topic_conf_s *
+## topic_conf(RdKafka::Conf conf)
+##   CODE:
+##     RETVAL = conf->topic_conf;
+##   OUTPUT:
+##     RETVAL
+
+int
+enable_auto_commit(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->enable_auto_commit;
+  OUTPUT:
+    RETVAL
+
+int
+enable_auto_offset_store(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->enable_auto_offset_store;
+  OUTPUT:
+    RETVAL
+
+int
+auto_commit_interval_ms(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->auto_commit_interval_ms;
+  OUTPUT:
+    RETVAL
+
+int
+group_session_timeout_ms(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->group_session_timeout_ms;
+  OUTPUT:
+    RETVAL
+
+int
+group_heartbeat_intvl_ms(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->group_heartbeat_intvl_ms;
+  OUTPUT:
+    RETVAL
+
+## rd_kafkap_str_t *
+## group_protocol_type(RdKafka::Conf conf)
+##   CODE:
+##     RETVAL = conf->group_protocol_type;
+##   OUTPUT:
+##     RETVAL
+
+char *
+partition_assignment_strategy(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->partition_assignment_strategy;
+  OUTPUT:
+    RETVAL
+
+## rd_list_t
+## partition_assignors(RdKafka::Conf conf)
+##   CODE:
+##     RETVAL = conf->partition_assignors;
+##   OUTPUT:
+##     RETVAL
+
+int
+enabled_assignor_cnt(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->enabled_assignor_cnt;
+  OUTPUT:
+    RETVAL
+
+## struct rd_kafka_assignor_s *
+## assignor(RdKafka::Conf conf)
+##   CODE:
+##     RETVAL = conf->assignor;
+##   OUTPUT:
+##     RETVAL
+
+## no return:
+## rebalance_cb(RdKafka::Conf conf)
+##   CODE:
+##     RETVAL = conf->rebalance_cb;
+##   OUTPUT:
+##     RETVAL
+
+## no return:
+## offset_commit_cb(RdKafka::Conf conf)
+##   CODE:
+##     RETVAL = conf->offset_commit_cb;
+##   OUTPUT:
+##     RETVAL
+
+## rd_kafka_offset_method_t
+## offset_store_method(RdKafka::Conf conf)
+##   CODE:
+##     RETVAL = conf->offset_store_method;
+##   OUTPUT:
+##     RETVAL
+
+int
+queue_buffering_max_msgs(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->queue_buffering_max_msgs;
+  OUTPUT:
+    RETVAL
+
+int
+buffering_max_ms(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->buffering_max_ms;
+  OUTPUT:
+    RETVAL
+
+int
+max_retries(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->max_retries;
+  OUTPUT:
+    RETVAL
+
+int
+retry_backoff_ms(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->retry_backoff_ms;
+  OUTPUT:
+    RETVAL
+
+int
+batch_num_messages(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->batch_num_messages;
+  OUTPUT:
+    RETVAL
+
+## rd_kafka_compression_t
+## compression_codec(RdKafka::Conf conf)
+##   CODE:
+##     RETVAL = conf->compression_codec;
+##   OUTPUT:
+##     RETVAL
+
+int
+dr_err_only(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->dr_err_only;
+  OUTPUT:
+    RETVAL
+
+## no return:
+## dr_cb(RdKafka::Conf conf)
+##   CODE:
+##     RETVAL = conf->dr_cb;
+##   OUTPUT:
+##     RETVAL
+
+## no return:
+## dr_msg_cb(RdKafka::Conf conf)
+##   CODE:
+##     RETVAL = conf->dr_msg_cb;
+##   OUTPUT:
+##     RETVAL
+
+## no return:
+## consume_cb(RdKafka::Conf conf)
+##   CODE:
+##     RETVAL = conf->consume_cb;
+##   OUTPUT:
+##     RETVAL
+
+## no return:
+## error_cb(RdKafka::Conf conf)
+##   CODE:
+##     RETVAL = conf->error_cb;
+##   OUTPUT:
+##     RETVAL
+
+## no return:
+## throttle_cb(RdKafka::Conf conf)
+##   CODE:
+##     RETVAL = conf->throttle_cb;
+##   OUTPUT:
+##     RETVAL
+
+## no return:
+## stats_cb(RdKafka::Conf conf)
+##   CODE:
+##     RETVAL = conf->stats_cb;
+##   OUTPUT:
+##     RETVAL
+
+## no return:
+## log_cb(RdKafka::Conf conf)
+##   CODE:
+##     RETVAL = conf->log_cb;
+##   OUTPUT:
+##     RETVAL
+
+int
+log_level(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->log_level;
+  OUTPUT:
+    RETVAL
+
+int
+log_thread_name(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->log_thread_name;
+  OUTPUT:
+    RETVAL
+
+int
+log_connection_close(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->log_connection_close;
+  OUTPUT:
+    RETVAL
+
+## no return:
+## socket_cb(RdKafka::Conf conf)
+##   CODE:
+##     RETVAL = conf->socket_cb;
+##   OUTPUT:
+##     RETVAL
+
+## no return:
+## open_cb(RdKafka::Conf conf)
+##   CODE:
+##     RETVAL = conf->open_cb;
+##   OUTPUT:
+##     RETVAL
+
+void *
+opaque(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->opaque;
+  OUTPUT:
+    RETVAL
+
+#if RD_KAFKA_VERSION >= 0x000902ff
+
+int
+enabled_events(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->enabled_events;
+  OUTPUT:
+    RETVAL
+
+int
+msg_copy_max_size(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->msg_copy_max_size;
+  OUTPUT:
+    RETVAL
+
+int
+enable_partition_eof(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->enable_partition_eof;
+  OUTPUT:
+    RETVAL
+
+int
+queue_buffering_max_kbytes(RdKafka::Conf conf)
+  CODE:
+    RETVAL = conf->queue_buffering_max_kbytes;
+  OUTPUT:
+    RETVAL
+
+#endif
 
 
 MODULE = RdKafka    PACKAGE = RdKafka::TopicConf    PREFIX = rd_kafka_topic_conf_
