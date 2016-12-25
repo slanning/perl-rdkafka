@@ -11,6 +11,8 @@ extern "C" {
 #include <stdio.h>
 /* bzero */
 #include <strings.h>
+/* errno */
+#include <errno.h>
 
 /* LOG_DEBUG etc. constants - is this OK on windows? */
 #include <sys/syslog.h>
@@ -484,46 +486,32 @@ int
 rd_kafka_outq_len(RdKafka rk)
 
 ## TODO: make fp default to STDOUT/STDERR?
-## This handles fp_sv specially,
-## because the typemap for FILE * doesn't work
-## with in particular the $fh from open(my $fh, ">", \$buf)
 void
-rd_kafka_dump(RdKafka rk, SV *fp_sv)
-  PREINIT:
-    IO *iop;
+rd_kafka_dump(RdKafka rk, SV *fh)
+  INIT:
+    FILE *fp;
+    char buf[PERL_RDKAFKA_READ_BUF_SIZE];
   CODE:
-    iop = sv_2io(fp_sv);
+    fp = tmpfile();
+    if (fp == (FILE*)NULL)
+        croak("tmpfile failed (errno: %d)", errno);
 
-    if (iop) {
-        PerlIO *perliop;
-        perliop = IoOFP(iop);
+    rd_kafka_dump(fp, rk);
 
-        if (perliop) {
-            FILE *fp;
-            fp = PerlIO_findFILE(perliop);
-
-            if (fp) {
-                rd_kafka_dump(fp, rk);
-            } else {
-                char buf[PERL_RDKAFKA_READ_BUF_SIZE];
-
-                fp = tmpfile();
-                rd_kafka_dump(fp, rk);
-                rewind(fp);
-                for (;;) {
-                    size_t n = fread(buf, 1, PERL_RDKAFKA_READ_BUF_SIZE, fp);
-                    PerlIO_write(perliop, buf, n);
-                    if (n < PERL_RDKAFKA_READ_BUF_SIZE)
-                        break;
-                }
-                fclose(fp);
-            }
-        } else {
-            warn("Couldn't dump to filehandle (perliop NULL)\n");
+    rewind(fp);
+    for (;;) {
+        size_t n = fread(buf, 1, PERL_RDKAFKA_READ_BUF_SIZE, fp);
+        if (n) {
+            PUSHMARK(SP);
+            XPUSHs(fh);
+            XPUSHs(sv_2mortal(newSVpvn(buf, n)));
+            PUTBACK;
+            call_pv("RdKafka::rd_kafka_dump_print_fh", G_VOID);
         }
-    } else {
-        warn("Couldn't dump to filehandle (iop NULL)\n");
+        if (n < PERL_RDKAFKA_READ_BUF_SIZE)
+            break;
     }
+    fclose(fp);
 
 int
 rd_kafka_thread_cnt(...)

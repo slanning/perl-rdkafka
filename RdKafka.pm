@@ -159,6 +159,14 @@ sub new {
     return($rk);
 }
 
+# convenience function used by rd_kafka_dump
+# (thanks to Ævar Arnfjörð Bjarmason for the idea)
+sub rd_kafka_dump_print_fh {
+    my ($fh, $str) = @_;
+    printf $fh $str;
+    return;
+}
+
 
 1;
 __END__
