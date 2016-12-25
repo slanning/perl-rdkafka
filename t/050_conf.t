@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use RdKafka qw/:enums/;
 
-use Test::More tests => 7;
+use Test::More tests => 9;
 
 {
     my $conf = RdKafka::Conf->new();
@@ -58,22 +58,26 @@ use Test::More tests => 7;
     };
 }
 
-{
-    # if version >= 0x000901ff
-    #use RdKafka qw/:event/;
+SKIP: {
+    skip("need version >= 0.9.2", 2)
+      unless RdKafka::version() >= 0x000902ff;
+
+    # event" is not defined in %RdKafka::EXPORT_TAGS
+    require RdKafka;
+    RdKafka->import(qw/:event/);
+
     my $conf = RdKafka::Conf->new();
 
     ## "events is a bitmask of RD_KAFKA_EVENT_* of events to enable
     ## for consumption by `rd_kafka_queue_poll()`"
+    is($conf->enabled_events, 0, "initially no events enabled");    # TODO: is this right?
 
-    ## turns out Kafka 0.9.1 (which I have a package installed for)
-    # doesn't have events yet (I was basing things on 0.9.2)
-    ##conf_set_events($conf, RD_KAFKA_EVENT_LOG | RD_KAFKA_EVENT_ERROR);
-    # I hope they have accessor functions,
-    # because the rd_kafka_conf_t struct is huge...
-    # (making/maintaining accessors for it in XS will suck)
+    no strict 'subs';  # Bareword not allowed
+    my $expected_events = RD_KAFKA_EVENT_LOG | RD_KAFKA_EVENT_ERROR;
+    $conf->set_events($expected_events);
+
+    is($conf->enabled_events, $expected_events, "expected events enabled");
 }
-
 
 {
     my $conf = RdKafka::Conf->new();
@@ -86,3 +90,12 @@ use Test::More tests => 7;
     #my $got_opaque = $rk->opaque;
     #is($got_opaque, $expected_opaque, "got expected opaque ($got_opaque)");
 }
+
+{
+    my $conf = RdKafka::Conf->new;
+    # the int and char* fields of rd_kafka_conf_t are wrapped,
+    # look in RdKafka.x for the struct accessors
+    diag("max_msg_size: " . $conf->max_msg_size);
+    diag("broker_version_fallback: " . $conf->broker_version_fallback);
+}
+
