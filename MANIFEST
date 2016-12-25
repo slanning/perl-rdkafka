@@ -4,7 +4,10 @@ MANIFEST
 ppport.h
 RdKafka.xs
 RdKafka.pm
+RdKafka/Conf.pm
+RdKafka/Queue.pm
 RdKafka/Topic.pm
+RdKafka/TopicConf.pm
 RdKafka/TopicPartitionList.pm
 README.txt
 t/000_use.t
