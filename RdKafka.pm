@@ -19,6 +19,12 @@ require RdKafka::Topic;
 require RdKafka::TopicPartitionList;
 
 our %EXPORT_TAGS = (
+    consumer => [qw/
+        RD_KAFKA_OFFSET_BEGINNING
+        RD_KAFKA_OFFSET_END
+        RD_KAFKA_OFFSET_STORED
+        RD_KAFKA_OFFSET_INVALID
+    /],
     producer => [qw/
         RD_KAFKA_MSG_F_FREE
         RD_KAFKA_MSG_F_COPY
@@ -157,6 +163,24 @@ sub new {
 
     my $rk = new_xs($type, $conf);
     return($rk);
+}
+
+sub query_watermark_offsets {
+    my ($self, $topic, $partition, $timeout_ms) = @_;
+    my ($low, $high);
+    my $err = $self->query_watermark_offsets_xs($topic, $partition, $low, $high, $timeout_ms);
+
+    # I don't know what a good interface would be...
+    return($err, $low, $high);
+}
+
+sub get_watermark_offsets {
+    my ($self, $topic, $partition) = @_;
+    my ($low, $high);
+    my $err = $self->get_watermark_offsets_xs($topic, $partition, $low, $high);
+
+    # I don't know what a good interface would be...
+    return($err, $low, $high);
 }
 
 # convenience function used by rd_kafka_dump

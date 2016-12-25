@@ -1,9 +1,9 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use RdKafka qw/:enums/;
+use RdKafka qw/:enums :consumer/;
 
-use Test::More tests => 14;
+use Test::More tests => 17;
 
 # I can't see how to test that type isn't undef (gets treated as 0)
 #{
@@ -143,6 +143,20 @@ use Test::More tests => 14;
     # how to check failure?
 }
 
-# query_watermark_offsets
-# get_watermark_offsets
+{
+    my $rk = RdKafka->new(RD_KAFKA_CONSUMER);
+    my ($err, $low, $high) = $rk->query_watermark_offsets("test topic", 0, 1*1000);
+    # -180 = RD_KAFKA_RESP_ERR__WAIT_COORD, no idea what low and high are...
+    diag("err:$err low:$low high:$high");
+}
+
+{
+    my $rk = RdKafka->new(RD_KAFKA_CONSUMER);
+    my ($err, $low, $high) = $rk->get_watermark_offsets("test topic", 0);
+    is($err, 0, "get_watermark_offsets err=0");
+    is($low, RD_KAFKA_OFFSET_INVALID, "get_watermark_offsets low invalid");
+    is($high, RD_KAFKA_OFFSET_INVALID, "get_watermark_offsets high invalid");
+
+    diag("err:$err low:$low high:$high");
+}
 

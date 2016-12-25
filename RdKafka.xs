@@ -364,13 +364,11 @@ rd_kafka_new_xs(rd_kafka_type_t type, RdKafka::Conf conf)
 
 const char *
 rd_kafka_name(RdKafka rk)
-#rd_kafka_name(const rd_kafka_t *rk)
 
 ## TODO
 ## see rd_kafka_mem_free
 char *
 rd_kafka_memberid(RdKafka rk)
-#rd_kafka_memberid(const rd_kafka_t *rk)
 
 int
 rd_kafka_poll(RdKafka rk, int timeout_ms)
@@ -385,12 +383,23 @@ rd_kafka_pause_partitions(RdKafka rk, RdKafka::TopicPartitionList partitions)
 rd_kafka_resp_err_t
 rd_kafka_resume_partitions(RdKafka rk, RdKafka::TopicPartitionList partitions)
 
-## TODO: figure out how best to handle both return value (error) and the low/high IN_OUT params
-## rd_kafka_resp_err_t
-## rd_kafka_query_watermark_offsets(RdKafka rk, const char *topic, int32_t partition, int64_t *low, int64_t *high, int timeout_ms)
-##
-## rd_kafka_resp_err_t
-## rd_kafka_get_watermark_offsets(RdKafka rk, const char *topic, int32_t partition, int64_t *low, int64_t *high)
+rd_kafka_resp_err_t
+rd_kafka_query_watermark_offsets_xs(RdKafka rk, const char *topic, int32_t partition, OUT int64_t low, OUT int64_t high, int timeout_ms)
+  CODE:
+    RETVAL = rd_kafka_query_watermark_offsets(rk, topic, partition, &low, &high, timeout_ms);
+  OUTPUT:
+    RETVAL
+    low
+    high
+
+rd_kafka_resp_err_t
+rd_kafka_get_watermark_offsets_xs(RdKafka rk, const char *topic, int32_t partition, OUT int64_t low, OUT int64_t high)
+  CODE:
+    RETVAL = rd_kafka_get_watermark_offsets(rk, topic, partition, &low, &high);
+  OUTPUT:
+    RETVAL
+    low
+    high
 
 # leave this out?
 # "rd_kafka_mem_free() must only be used for pointers returned by APIs
@@ -1669,6 +1678,21 @@ BOOT:
    */
 #ifdef RD_KAFKA_PARTITION_UA
   newCONSTSUB(stash, "RD_KAFKA_PARTITION_UA", newSViv(RD_KAFKA_PARTITION_UA));
+#endif
+  /*
+    CONSUMER
+   */
+#ifdef RD_KAFKA_OFFSET_BEGINNING
+  newCONSTSUB(stash, "RD_KAFKA_OFFSET_BEGINNING", newSViv(RD_KAFKA_OFFSET_BEGINNING));
+#endif
+#ifdef RD_KAFKA_OFFSET_END
+  newCONSTSUB(stash, "RD_KAFKA_OFFSET_END", newSViv(RD_KAFKA_OFFSET_END));
+#endif
+#ifdef RD_KAFKA_OFFSET_STORED
+  newCONSTSUB(stash, "RD_KAFKA_OFFSET_STORED", newSViv(RD_KAFKA_OFFSET_STORED));
+#endif
+#ifdef RD_KAFKA_OFFSET_INVALID
+  newCONSTSUB(stash, "RD_KAFKA_OFFSET_INVALID", newSViv(RD_KAFKA_OFFSET_INVALID));
 #endif
   /*
     PRODUCER
