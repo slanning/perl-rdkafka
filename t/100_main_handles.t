@@ -156,7 +156,10 @@ use Test::More tests => 17;
     is($err, 0, "get_watermark_offsets err=0");
     is($low, RD_KAFKA_OFFSET_INVALID, "get_watermark_offsets low invalid");
     is($high, RD_KAFKA_OFFSET_INVALID, "get_watermark_offsets high invalid");
-
-    diag("err:$err low:$low high:$high");
 }
 
+#{
+#    my $rk = RdKafka->new(RD_KAFKA_CONSUMER);
+#    my ($err, $topparlist) = $rk->subscription();
+#    diag("err: $err topparlist: $topparlist");
+#}

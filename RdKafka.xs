@@ -433,8 +433,13 @@ rd_kafka_subscribe(RdKafka rk, RdKafka::TopicPartitionList topics)
 rd_kafka_resp_err_t
 rd_kafka_unsubscribe(RdKafka rk)
 
-## rd_kafka_resp_err_t
-## rd_kafka_subscription(RdKafka rk, rd_kafka_topic_partition_list_t **topics)
+##rd_kafka_resp_err_t
+##rd_kafka_subscription_xs(RdKafka rk, OUT RdKafka::TopicPartitionList topics)
+##  CODE:
+##    RETVAL = rd_kafka_subscription(rk, &topics);
+##  OUTPUT:
+##    RETVAL
+##    topics
 
 RdKafka::Message
 rd_kafka_consumer_poll(RdKafka rk, int timeout_ms)
@@ -691,7 +696,8 @@ rd_kafka_topic_partition_list_DESTROY(RdKafka::TopicPartitionList list)
 #ifdef PERL_RDKAFKA_DEBUG
     printf("DESTROY RdKafka::TopicPartitionList\n");
 #endif
-    rd_kafka_topic_partition_list_destroy(list);
+    if (list)
+        rd_kafka_topic_partition_list_destroy(list);
 
 ## struct rd_kafka_topic_partition_list_t accessors: cnt, size, elems
 

@@ -183,6 +183,13 @@ sub get_watermark_offsets {
     return($err, $low, $high);
 }
 
+#sub subscription {
+#    my ($self) = @_;
+#    my $topparlist;
+#    my $err = $self->subscription_xs($topparlist);
+#    return($err, $topparlist);
+#}
+
 # convenience function used by rd_kafka_dump
 # (thanks to Ævar Arnfjörð Bjarmason for the idea)
 sub rd_kafka_dump_print_fh {
