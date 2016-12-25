@@ -299,16 +299,43 @@ rd_kafka_get_err_descs(...)
     RETVAL
 
 const char *
-rd_kafka_err2str(rd_kafka_resp_err_t err)
+rd_kafka_err2str(...)
+  PREINIT:
+    rd_kafka_resp_err_t err;
+    SV *err_sv;
+  CODE:
+    err_sv = (items == 1) ? ST(0) : ST(1);
+    err = (rd_kafka_resp_err_t)SvIV(err_sv);
+    RETVAL = rd_kafka_err2str(err);
+  OUTPUT:
+    RETVAL
 
 const char *
-rd_kafka_err2name(rd_kafka_resp_err_t err)
+rd_kafka_err2name(...)
+  PREINIT:
+    rd_kafka_resp_err_t err;
+    SV *err_sv;
+  CODE:
+    err_sv = (items == 1) ? ST(0) : ST(1);
+    err = (rd_kafka_resp_err_t)SvIV(err_sv);
+    RETVAL = rd_kafka_err2name(err);
+  OUTPUT:
+    RETVAL
 
 rd_kafka_resp_err_t
 rd_kafka_last_error(...)
 
 rd_kafka_resp_err_t
-rd_kafka_errno2err(int errnox)
+rd_kafka_errno2err(...)
+  PREINIT:
+    int errnox;
+    SV *err_sv;
+  CODE:
+    err_sv = (items == 1) ? ST(0) : ST(1);
+    errnox = SvIV(err_sv);
+    RETVAL = rd_kafka_errno2err(errnox);
+  OUTPUT:
+    RETVAL
 
 int
 rd_kafka_errno(...)

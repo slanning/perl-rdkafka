@@ -5,7 +5,7 @@ use POSIX ();
 
 use RdKafka;
 
-use Test::More tests => 11;
+use Test::More tests => 14;
 
 
 # get_debug_contexts
@@ -38,15 +38,21 @@ is($unknown_error, -1,           "RD_KAFKA_RESP_ERR_UNKNOWN from rd_kafka_resp_e
 
 my $errstr = RdKafka::err2str($unknown_error);
 ok($errstr,                      "err2str is something ($errstr)");
+$errstr = RdKafka->err2str($unknown_error);
+ok($errstr,                      "err2str ok as class method ($errstr)");
 
 my $errname = RdKafka::err2name($unknown_error);
 ok($errname,                     "err2name is something ($errname)");
+$errname = RdKafka::err2name($unknown_error);
+ok($errname,                     "err2name ok as class method ($errname)");
 
 my $last_error = RdKafka::last_error();
 is($last_error, 0,               "last_error is 0");
 
 my $errcode = RdKafka::errno2err(POSIX::EINVAL);
 ok($errcode,                     "errno2err is something ($errcode)");
+$errcode = RdKafka::errno2err(POSIX::EINVAL);
+ok($errcode,                     "errno2err ok as class method ($errcode)");
 
 my $errno = RdKafka::errno();
 ok($errno == 0,                  "errno is 0");
