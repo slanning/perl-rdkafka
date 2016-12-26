@@ -202,10 +202,17 @@ sub rd_kafka_dump_print_fh {
 #    my ($self, $all_topics, $only_rkt, $timeout_ms) = @_;
 #    $all_topics ||= 0;
 #    $only_rkt ||= RdKafka::Topic->new($self);
-#    $timeout_ms ||= 1000;
+#    $timeout_ms //= 1000;
 #    my $metadata;
 #    my $err = $self->metadata_xs($all_topics, $only_rkt, $metadata, $timeout_ms);
 #    return($err, $metadata);
+#}
+
+#sub list_groups {
+#    my ($self, $group, $timeout_ms) = @_;
+#    $timeout_ms //= 1000;
+#    my ($err, $grplist) = $self->list_groups_xs($group, $timeout_ms);
+#    return($err, $grplist);
 #}
 
 

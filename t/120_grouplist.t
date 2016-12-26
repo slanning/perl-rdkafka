@@ -1,8 +1,13 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use RdKafka;
+use RdKafka qw/:enums/;
 
 use Test::More tests => 1;
 
-ok(1, "heya");
+#{
+#    my $rk = RdKafka->new(RD_KAFKA_CONSUMER);
+#    my ($err, $grplist) = $rk->list_groups();
+#}
+
+ok(1, "hi");

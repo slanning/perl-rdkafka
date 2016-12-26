@@ -502,10 +502,21 @@ rd_kafka_opaque(RdKafka rk)
 ### CLIENT GROUP INFORMATION
 ## https://cwiki.apache.org/confluence/display/KAFKA/A+Guide+To+The+Kafka+Protocol#AGuideToTheKafkaProtocol-GroupMembershipAPI
 
-## TODO: grplistp is an OUT PARAM
-## rd_kafka_resp_err_t
-## rd_kafka_list_groups(RdKafka rk, const char *group, RdKafka::GroupList *grplistp, int timeout_ms)
-
+##void
+##rd_kafka_list_groups_xs(RdKafka rk, SV *group, int timeout_ms)
+##  PREINIT:
+##    const char *group_c;
+##    rd_kafka_resp_err_t err;
+##    RdKafka__GroupList grplist;
+##  PPCODE:
+##    if (SvOK(group))
+##        group_c = SvPV_nolen(group);
+##    err = rd_kafka_list_groups(rk, group_c, (const struct rd_kafka_group_list **)&grplist, timeout_ms);
+##    EXTEND(SP, 2);
+##    PUSHs(sv_2mortal(newSViv(err)));
+##    ST(1) = sv_newmortal();
+##    sv_setref_pv(ST(1), "RdKafka::GroupList", (void*)grplist);
+    
 
 ### MISCELLANEOUS
 
