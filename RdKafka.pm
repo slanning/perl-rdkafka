@@ -198,6 +198,16 @@ sub rd_kafka_dump_print_fh {
     return;
 }
 
+#sub metadata {
+#    my ($self, $all_topics, $only_rkt, $timeout_ms) = @_;
+#    $all_topics ||= 0;
+#    $only_rkt ||= RdKafka::Topic->new($self);
+#    $timeout_ms ||= 1000;
+#    my $metadata;
+#    my $err = $self->metadata_xs($all_topics, $only_rkt, $metadata, $timeout_ms);
+#    return($err, $metadata);
+#}
+
 
 1;
 __END__

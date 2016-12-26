@@ -490,8 +490,13 @@ rd_kafka_opaque(RdKafka rk)
 ### METADATA API
 
 ## TODO: metadatap is in OUT param
-## rd_kafka_resp_err_t
-## rd_kafka_metadata(RdKafka rk, int all_topics, RdKafka::Topic only_rkt, RdKafka::Metadata *metadatap, int timeout_ms)
+##rd_kafka_resp_err_t
+##rd_kafka_metadata_xs(RdKafka rk, int all_topics, RdKafka::Topic only_rkt, OUT RdKafka::Metadata metadatap, int timeout_ms)
+##  CODE:
+##    RETVAL = rd_kafka_metadata(rk, all_topics, only_rkt, (const struct rd_kafka_metadata **) &metadatap, timeout_ms);
+##  OUTPUT:
+##    RETVAL
+##    metadatap
 
 
 ### CLIENT GROUP INFORMATION

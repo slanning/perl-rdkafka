@@ -1,8 +1,15 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use RdKafka;
+use RdKafka qw/:enums/;
 
 use Test::More tests => 1;
 
-ok(1, "heya");
+#{
+#    my $rk = RdKafka->new(RD_KAFKA_CONSUMER);
+#    my ($err, $metadata) = $rk->metadata();
+#    diag("err:$err metadata:$metadata");
+#}
+
+ok(1,"hi");
+
