@@ -226,11 +226,16 @@ typedef rd_kafka_queue_t *RdKafka__Queue;
 /* several things like payload, opaque, metadata... use void* which I assume from Perl to be a char* */
 typedef char *VOIDBUFFER;
 
-#ifdef PerlIO
-typedef PerlIO * OutputStream;
-#else
-typedef FILE * OutputStream;
-#endif
+#define T_PTROBJ_IN(var, arg, type, ntype, func) STMT_START { \
+        if (SvROK(arg) && sv_derived_from(arg, #ntype)) {    \
+            IV tmp = SvIV((SV*) SvRV(arg)); \
+            var = INT2PTR(type, tmp); \
+        } else \
+            Perl_croak_nocontext("RdKafka::" #func ": $" #var " is not of type " #ntype); \
+    } STMT_END
+#define T_PTROBJ_OUT(arg, ntype, var) STMT_START { \
+        sv_setref_pv(arg, #ntype, (void*)var); \
+    } STMT_END
 
 /* make this a compile flag? */
 // #define PERL_RDKAFKA_DEBUG 1
@@ -489,14 +494,20 @@ rd_kafka_opaque(RdKafka rk)
 
 ### METADATA API
 
-## TODO: metadatap is in OUT param
-##rd_kafka_resp_err_t
-##rd_kafka_metadata_xs(RdKafka rk, int all_topics, RdKafka::Topic only_rkt, OUT RdKafka::Metadata metadatap, int timeout_ms)
-##  CODE:
-##    RETVAL = rd_kafka_metadata(rk, all_topics, only_rkt, (const struct rd_kafka_metadata **) &metadatap, timeout_ms);
-##  OUTPUT:
-##    RETVAL
-##    metadatap
+void
+rd_kafka_metadata_xs(RdKafka rk, int all_topics, SV *only_rkt, int timeout_ms)
+  PREINIT:
+    const struct rd_kafka_metadata *metadatap;
+    rd_kafka_resp_err_t err;
+    RdKafka__Topic only_rkt_c = 0;
+  PPCODE:
+    if (SvOK(only_rkt))
+        T_PTROBJ_IN(only_rkt_c, only_rkt, RdKafka__Topic, RdKafka::Topic, metadata_xs);
+    err = rd_kafka_metadata(rk, all_topics, only_rkt_c, &metadatap, timeout_ms);
+    EXTEND(SP, 2);
+    PUSHs(sv_2mortal(newSViv(err)));
+    ST(1) = sv_newmortal();
+    T_PTROBJ_OUT(ST(1), RdKafka::Metadata, metadatap);
 
 
 ### CLIENT GROUP INFORMATION
@@ -515,7 +526,7 @@ rd_kafka_list_groups_xs(RdKafka rk, SV *group, int timeout_ms)
     EXTEND(SP, 2);
     PUSHs(sv_2mortal(newSViv(err)));
     ST(1) = sv_newmortal();
-    sv_setref_pv(ST(1), "RdKafka::GroupList", (void*)grplist);
+    T_PTROBJ_OUT(ST(1), RdKafka::GroupList, grplist);
 
 
 ### MISCELLANEOUS
