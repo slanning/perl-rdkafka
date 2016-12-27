@@ -92,6 +92,13 @@ SKIP: {
 }
 
 {
+    my $conf = RdKafka::Conf->new();
+    my $topic_conf = RdKafka::TopicConf->new();
+    $conf->set_default_topic_conf($topic_conf);
+    # don't have a way to get the topic_conf back (yet)
+}
+
+{
     my $conf = RdKafka::Conf->new;
     # the int and char* fields of rd_kafka_conf_t are wrapped,
     # look in RdKafka.x for the struct accessors

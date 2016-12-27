@@ -896,6 +896,7 @@ rd_kafka_conf_set(RdKafka::Conf conf, const char *name, const char *value)
 void
 rd_kafka_conf_set_opaque(RdKafka::Conf conf, VOIDBUFFER opaque)
 
+## note: this actually destroys any existing topic conf at conf->topic_conf
 void
 rd_kafka_conf_set_default_topic_conf(RdKafka::Conf conf, RdKafka::TopicConf tconf)
 
