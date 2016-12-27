@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use RdKafka qw/:enums/;
 
-use Test::More tests => 9;
+use Test::More tests => 15;
 
 {
     my $conf = RdKafka::Conf->new();
@@ -99,10 +99,26 @@ SKIP: {
 }
 
 {
+    my $conf = RdKafka::Conf->new();
+    my $name = 'broker.version.fallback';
+    my ($ret, $value) = $conf->get($name);
+    is($ret, RD_KAFKA_CONF_OK, "conf name $name is OK");
+    ok($value, "conf has a $name");
+}
+
+{
+    my $conf = RdKafka::Conf->new();
+    my $name = 'broke.back.mountain';
+    my ($ret, $value) = $conf->get($name);
+    is($ret, RD_KAFKA_CONF_UNKNOWN, "conf name $name is unknown");
+    ok(!$value, "conf doesn't have a $name");
+}
+
+{
     my $conf = RdKafka::Conf->new;
-    # the int and char* fields of rd_kafka_conf_t are wrapped,
+    # the int and char* fields of rd_kafka_conf_t are wrapped;
     # look in RdKafka.x for the struct accessors
-    diag("max_msg_size: " . $conf->max_msg_size);
-    diag("broker_version_fallback: " . $conf->broker_version_fallback);
+    ok($conf->max_msg_size, "max_msg_size access works");
+    ok($conf->broker_version_fallback, "broker_version_fallback access works");
 }
 

@@ -818,20 +818,6 @@ rd_kafka_conf_destroy(RdKafka::Conf conf)
 RdKafka::Conf
 rd_kafka_conf_dup(RdKafka::Conf conf)
 
-## rd_kafka_conf_res_t
-## rd_kafka_conf_set(RdKafka::Conf conf, const char *name, const char *value, char *errstr, size_t errstr_size)
-## TODO?
-## just croaking on error for now
-void
-rd_kafka_conf_set(RdKafka::Conf conf, const char *name, const char *value)
-  PREINIT:
-    char buf[PERL_RDKAFKA_DEFAULT_ERRSTR_SIZE];
-    rd_kafka_conf_res_t res;
-  CODE:
-    res = rd_kafka_conf_set(conf, name, value, buf, PERL_RDKAFKA_DEFAULT_ERRSTR_SIZE);
-    if (res != RD_KAFKA_CONF_OK)
-        croak("rd_kafka_conf_set failed (%d): %s", res, buf);
-
 ### TODO this conf section  #####
 
 ## #if RD_KAFKA_VERSION >= 0x000902ff
@@ -900,13 +886,33 @@ rd_kafka_conf_set_opaque(RdKafka::Conf conf, VOIDBUFFER opaque)
 void
 rd_kafka_conf_set_default_topic_conf(RdKafka::Conf conf, RdKafka::TopicConf tconf)
 
-## TODO: size_t * IN_OUT
 ## rd_kafka_conf_res_t
-## rd_kafka_conf_get (const rd_kafka_conf_t *conf, const char *name, char *dest, size_t *dest_size)
+## rd_kafka_conf_set(RdKafka::Conf conf, const char *name, const char *value, char *errstr, size_t errstr_size)
+## TODO?
+## just croaking on error for now
+void
+rd_kafka_conf_set(RdKafka::Conf conf, const char *name, const char *value)
+  PREINIT:
+    char buf[PERL_RDKAFKA_DEFAULT_ERRSTR_SIZE];
+    rd_kafka_conf_res_t res;
+  CODE:
+    res = rd_kafka_conf_set(conf, name, value, buf, PERL_RDKAFKA_DEFAULT_ERRSTR_SIZE);
+    if (res != RD_KAFKA_CONF_OK)
+        croak("rd_kafka_conf_set failed (%d): %s", res, buf);
 
-## TODO: size_t * IN_OUT
-## rd_kafka_conf_res_t
-## rd_kafka_topic_conf_get (const rd_kafka_topic_conf_t *conf, const char *name, char *dest, size_t *dest_size)
+void
+rd_kafka_conf_get(RdKafka::Conf conf, const char *name)
+  PREINIT:
+    rd_kafka_conf_res_t res;
+    char dest[512];
+    size_t dest_size = sizeof(dest);
+  PPCODE:
+    /* this can be more dynamic if necessary */
+    res = rd_kafka_conf_get(conf, name, dest, &dest_size);
+    EXTEND(SP, 2);
+    PUSHs(sv_2mortal(newSViv(res)));
+    if (res == RD_KAFKA_CONF_OK)
+        PUSHs(sv_2mortal(newSVpv(dest, 0)));
 
 ## TODO: take care of automatically freeing the dump on DESTROY
 ## The dump must be freed with `rd_kafka_conf_dump_free()`.
@@ -1496,9 +1502,30 @@ rd_kafka_topic_conf_new(char *package)
 RdKafka::TopicConf
 rd_kafka_topic_conf_dup(RdKafka::TopicConf conf)
 
+void
+rd_kafka_topic_conf_get(RdKafka::TopicConf conf, const char *name)
+  PREINIT:
+    rd_kafka_conf_res_t res;
+    char dest[512];
+    size_t dest_size = sizeof(dest);
+  PPCODE:
+    /* this can be more dynamic if necessary */
+    res = rd_kafka_topic_conf_get(conf, name, dest, &dest_size);
+    EXTEND(SP, 2);
+    PUSHs(sv_2mortal(newSViv(res)));
+    if (res == RD_KAFKA_CONF_OK)
+        PUSHs(sv_2mortal(newSVpv(dest, 0)));
+
 ## TODO: errstr+errstr_size
-## rd_kafka_conf_res_t
-## rd_kafka_topic_conf_set(RdKafka::TopicConf conf, const char *name, const char *value, char *errstr, size_t errstr_size)
+void
+rd_kafka_topic_conf_set(RdKafka::TopicConf conf, const char *name, const char *value)
+  PREINIT:
+    char buf[PERL_RDKAFKA_DEFAULT_ERRSTR_SIZE];
+    rd_kafka_conf_res_t res;
+  CODE:
+    res = rd_kafka_topic_conf_set(conf, name, value, buf, PERL_RDKAFKA_DEFAULT_ERRSTR_SIZE);
+    if (res != RD_KAFKA_CONF_OK)
+        croak("rd_kafka_topic_conf_set failed (%d): %s", res, buf);
 
 ## strangely, rd_kafka_opaque (on RdKafka) is what fetches the opaque..
 void
@@ -1507,6 +1534,9 @@ rd_kafka_topic_conf_set_opaque(RdKafka::TopicConf conf, VOIDBUFFER opaque)
 ## TODO
 ## void
 ## rd_kafka_topic_conf_set_partitioner_cb(RdKafka::TopicConf topic_conf, int32_t (*partitioner) (const rd_kafka_topic_t *rkt, const void *keydata, size_t keylen, int32_t partition_cnt, void *rkt_opaque, void *msg_opaque))
+
+void
+rd_kafka_topic_conf_destroy(RdKafka::TopicConf topic_conf)
 
 void
 rd_kafka_topic_conf_DESTROY(RdKafka::TopicConf topic_conf)

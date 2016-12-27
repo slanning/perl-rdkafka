@@ -145,9 +145,10 @@ use Test::More tests => 17;
 
 {
     my $rk = RdKafka->new(RD_KAFKA_CONSUMER);
+
+    # err:-180 low:139851274233000 high:36366712 ??
     my ($err, $low, $high) = $rk->query_watermark_offsets("test topic", 0, 1*1000);
-    # -180 = RD_KAFKA_RESP_ERR__WAIT_COORD, no idea what low and high are...
-    diag("err:$err low:$low high:$high");
+    is($err, RD_KAFKA_RESP_ERR__WAIT_COORD, "query_watermark_offsets gives an error ($err)");
 }
 
 {

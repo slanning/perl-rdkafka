@@ -15,7 +15,10 @@ use XSLoader ();
 
 XSLoader::load(__PACKAGE__, $VERSION);
 
+require RdKafka::Conf;
+require RdKafka::Queue;
 require RdKafka::Topic;
+require RdKafka::TopicConf;
 require RdKafka::TopicPartitionList;
 
 our %EXPORT_TAGS = (
