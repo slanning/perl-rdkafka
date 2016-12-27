@@ -1,9 +1,10 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
+use File::Temp qw/tempfile/;
 use RdKafka qw/:enums/;
 
-use Test::More tests => 17;
+use Test::More tests => 19;
 
 {
     my $conf = RdKafka::Conf->new();
@@ -127,4 +128,28 @@ SKIP: {
     my $dump = $conf->dump();
     ok(scalar(keys(%$dump)), "conf dump returns a hash with keys");
     is($dump->{'client.id'}, 'rdkafka', "client.id eq 'rdkafka'");   # tried to pick one that wouldn't change (?)
+}
+
+my $dump_output_re = qr/builtin\.features/ms;
+{
+    my $conf = RdKafka::Conf->new();
+    my ($fh, $filename) = tempfile(undef, UNLINK => 1);
+    $conf->properties_show($fh);
+    close($fh);
+    open(my $fh2, $filename);
+    my $buf = do { local $/; <$fh2> };
+    close($fh2);
+
+    like($buf, $dump_output_re, "dump works with a file filehandle");
+}
+
+{
+    my $conf = RdKafka::Conf->new();
+
+    my $buf = "";
+    open(my $fh, ">", \$buf) or die("Can't open variable for writing: $!");
+    $conf->properties_show($fh);
+    close($fh);
+
+    like($buf, $dump_output_re, "dump works with a scalar reference filehandle");
 }

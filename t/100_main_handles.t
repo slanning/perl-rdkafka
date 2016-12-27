@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use RdKafka qw/:enums :consumer/;
 
-use Test::More tests => 17;
+use Test::More tests => 18;
 
 # I can't see how to test that type isn't undef (gets treated as 0)
 #{

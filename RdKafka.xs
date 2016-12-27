@@ -940,9 +940,31 @@ rd_kafka_conf_dump(RdKafka::Conf conf)
 
 ## fix fp as with rd_kafka_dump
 void
-rd_kafka_conf_properties_show(RdKafka::Conf conf, FILE *fp)
-  C_ARGS:
-    fp
+rd_kafka_conf_properties_show(RdKafka::Conf conf, SV *fh)
+  INIT:
+    FILE *fp;
+    char buf[PERL_RDKAFKA_READ_BUF_SIZE];
+  CODE:
+    fp = tmpfile();
+    if (fp == (FILE*)NULL)
+        croak("tmpfile failed (errno: %d)", errno);
+
+    rd_kafka_conf_properties_show(fp);
+
+    rewind(fp);
+    for (;;) {
+        size_t n = fread(buf, 1, PERL_RDKAFKA_READ_BUF_SIZE, fp);
+        if (n) {
+            PUSHMARK(SP);
+            XPUSHs(fh);
+            XPUSHs(sv_2mortal(newSVpvn(buf, n)));
+            PUTBACK;
+            call_pv("RdKafka::Conf::rd_kafka_conf_properties_show_print_fh", G_VOID);
+        }
+        if (n < PERL_RDKAFKA_READ_BUF_SIZE)
+            break;
+    }
+    fclose(fp);
 
 ## rd_kafka_new destroys the conf, so can't call rd_kafka_conf_destroy.
 ## Not sure how to deal with that now.
