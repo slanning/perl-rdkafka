@@ -784,19 +784,20 @@ MODULE = RdKafka    PACKAGE = RdKafka::Message    PREFIX = rd_kafka_message_
 void
 rd_kafka_message_destroy(RdKafka::Message rkmessage)
 
-## TODO: maybe should do this in RdKafka::Message
-## static RD_INLINE const char *
-## RD_UNUSED 
-## rd_kafka_message_errstr(const rd_kafka_message_t *rkmessage) {
-## Gives a compile error, maybe because of the "static"
-## static const char *
-## rd_kafka_message_errstr(const rd_kafka_message_t *rkmessage)
+## TODO: test these once we can consume things
+const char *
+rd_kafka_message_errstr(RdKafka::Message rkmessage)
 
-## TODO: maybe should do this in RdKafka::Message
-## (tstype is a pointer, meant as a 2nd return value)
-## int64_t
-## rd_kafka_message_timestamp(const RdKafka::Message rkmessage, OUT rd_kafka_timestamp_type_t tstype)
-
+void
+rd_kafka_message_timestamp(RdKafka::Message rkmessage)
+  PREINIT:
+    int64_t ts;
+    rd_kafka_timestamp_type_t tstype;
+  PPCODE:
+    ts = rd_kafka_message_timestamp(rkmessage, &tstype);
+    EXTEND(SP, 2);
+    PUSHs(sv_2mortal(newSViv(ts)));
+    PUSHs(sv_2mortal(newSViv(tstype)));
 
 
 MODULE = RdKafka    PACKAGE = RdKafka::Conf    PREFIX = rd_kafka_conf_
