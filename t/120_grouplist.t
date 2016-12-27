@@ -5,9 +5,12 @@ use RdKafka qw/:enums/;
 
 use Test::More tests => 1;
 
-#{
-#    my $rk = RdKafka->new(RD_KAFKA_CONSUMER);
-#    my ($err, $grplist) = $rk->list_groups();
-#}
+{
+    my $rk = RdKafka->new(RD_KAFKA_CONSUMER);
+    my ($err, $grplist) = $rk->list_groups();
 
-ok(1, "hi");
+    # I guess this is expected if there's no broker
+    is($err, RD_KAFKA_RESP_ERR__TIMED_OUT, "list_groups timed out");
+
+    $grplist->destroy() if defined($grplist);
+}

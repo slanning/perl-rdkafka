@@ -502,21 +502,21 @@ rd_kafka_opaque(RdKafka rk)
 ### CLIENT GROUP INFORMATION
 ## https://cwiki.apache.org/confluence/display/KAFKA/A+Guide+To+The+Kafka+Protocol#AGuideToTheKafkaProtocol-GroupMembershipAPI
 
-##void
-##rd_kafka_list_groups_xs(RdKafka rk, SV *group, int timeout_ms)
-##  PREINIT:
-##    const char *group_c;
-##    rd_kafka_resp_err_t err;
-##    RdKafka__GroupList grplist;
-##  PPCODE:
-##    if (SvOK(group))
-##        group_c = SvPV_nolen(group);
-##    err = rd_kafka_list_groups(rk, group_c, (const struct rd_kafka_group_list **)&grplist, timeout_ms);
-##    EXTEND(SP, 2);
-##    PUSHs(sv_2mortal(newSViv(err)));
-##    ST(1) = sv_newmortal();
-##    sv_setref_pv(ST(1), "RdKafka::GroupList", (void*)grplist);
-    
+void
+rd_kafka_list_groups_xs(RdKafka rk, SV *group, int timeout_ms)
+  PREINIT:
+    const char *group_c;
+    rd_kafka_resp_err_t err;
+    const struct rd_kafka_group_list *grplist;
+  PPCODE:
+    if (SvOK(group))
+        group_c = SvPV_nolen(group);
+    err = rd_kafka_list_groups(rk, group_c, &grplist, timeout_ms);
+    EXTEND(SP, 2);
+    PUSHs(sv_2mortal(newSViv(err)));
+    ST(1) = sv_newmortal();
+    sv_setref_pv(ST(1), "RdKafka::GroupList", (void*)grplist);
+
 
 ### MISCELLANEOUS
 
@@ -1581,13 +1581,17 @@ MODULE = RdKafka    PACKAGE = RdKafka::GroupInfo
 
 MODULE = RdKafka    PACKAGE = RdKafka::GroupList    PREFIX = rd_kafka_group_list_
 
+## releases memory of return value of rd_kafka_list_groups
+void
+rd_kafka_group_list_destroy (RdKafka::GroupList grplist)
+
 void
 rd_kafka_group_list_DESTROY(RdKafka::GroupList grplist)
   CODE:
 #ifdef PERL_RDKAFKA_DEBUG
     printf("DESTROY RdKafka::GroupList\n");
 #endif
-    rd_kafka_group_list_destroy(grplist);
+    /* rd_kafka_group_list_destroy(grplist); */
 
 
 MODULE = RdKafka    PACKAGE = RdKafka::Event    PREFIX = rd_kafka_event_
@@ -1688,7 +1692,7 @@ rd_kafka_metadata_DESTROY(RdKafka::Metadata metadata)
 #ifdef PERL_RDKAFKA_DEBUG
     printf("DESTROY RdKafka::Metadata\n");
 #endif
-    rd_kafka_metadata_destroy(metadata);
+    /* rd_kafka_metadata_destroy(metadata); */
 
 
 ## why can there not be empty lines in BOOT now??

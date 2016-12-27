@@ -208,12 +208,12 @@ sub rd_kafka_dump_print_fh {
 #    return($err, $metadata);
 #}
 
-#sub list_groups {
-#    my ($self, $group, $timeout_ms) = @_;
-#    $timeout_ms //= 1000;
-#    my ($err, $grplist) = $self->list_groups_xs($group, $timeout_ms);
-#    return($err, $grplist);
-#}
+sub list_groups {
+    my ($self, $group, $timeout_ms) = @_;
+    $timeout_ms //= 1000;
+    my ($err, $grplist) = $self->list_groups_xs($group, $timeout_ms);
+    return($err, $grplist);
+}
 
 
 1;
