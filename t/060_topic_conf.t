@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use RdKafka qw/:enums/;
 
-use Test::More tests => 6;
+use Test::More tests => 8;
 
 {
     my $topic_conf = RdKafka::TopicConf->new();
@@ -35,4 +35,11 @@ sub test_topic_conf_set_get {
     $topic_conf->set($name, $value);
     my ($err, $got) = $topic_conf->get($name);
     is($got, $value, "conf $name set/get ($value)");
+}
+
+{
+    my $topic_conf = RdKafka::TopicConf->new;
+    my $dump = $topic_conf->dump();
+    ok(scalar(keys(%$dump)), "conf dump returns a hash with keys");
+    is($dump->{'offset.store.method'}, 'broker', "offset.store.method eq 'broker'");   # tried to pick one that wouldn't change (?)
 }

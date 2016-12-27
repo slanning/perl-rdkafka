@@ -914,15 +914,31 @@ rd_kafka_conf_get(RdKafka::Conf conf, const char *name)
     if (res == RD_KAFKA_CONF_OK)
         PUSHs(sv_2mortal(newSVpv(dest, 0)));
 
-## TODO: take care of automatically freeing the dump on DESTROY
 ## The dump must be freed with `rd_kafka_conf_dump_free()`.
-## const char **
-## rd_kafka_conf_dump(RdKafka::Conf conf, size_t *cntp)
-## const char **
-## rd_kafka_topic_conf_dump(rd_kafka_topic_conf_t *conf, size_t *cntp)
+SV *
+rd_kafka_conf_dump(RdKafka::Conf conf)
+  PREINIT:
+    size_t cntp, i;
+    const char **dump;
+    HV *hv;
+  CODE:
+    dump = rd_kafka_conf_dump(conf, &cntp);
+    hv = newHV();
+    for (i = 0; i < cntp; i += 2) {
+        const char *key = dump[i];
+        const char *val = dump[i + 1];
+        if (!hv_store(hv, key, strlen(key), newSVpv(val, 0), 0))
+           croak("hv_store (conf_dump) failed");
+    }
+    rd_kafka_conf_dump_free(dump, cntp);
+    RETVAL = newRV_noinc((SV *)hv);
+  OUTPUT:
+    RETVAL
+
 ## void
 ## rd_kafka_conf_dump_free(const char **arr, size_t cnt)
 
+## fix fp as with rd_kafka_dump
 void
 rd_kafka_conf_properties_show(RdKafka::Conf conf, FILE *fp)
   C_ARGS:
@@ -1531,6 +1547,28 @@ rd_kafka_topic_conf_set(RdKafka::TopicConf conf, const char *name, const char *v
 void
 rd_kafka_topic_conf_set_opaque(RdKafka::TopicConf conf, VOIDBUFFER opaque)
 
+## The dump must be freed with `rd_kafka_conf_dump_free()`.
+## identical to rd_kafka_conf_dump except for TopicConf in param and rd_kafka_topic_conf_dump call
+SV *
+rd_kafka_topic_conf_dump(RdKafka::TopicConf conf)
+  PREINIT:
+    size_t cntp, i;
+    const char **dump;
+    HV *hv;
+  CODE:
+    dump = rd_kafka_topic_conf_dump(conf, &cntp);
+    hv = newHV();
+    for (i = 0; i < cntp; i += 2) {
+        const char *key = dump[i];
+        const char *val = dump[i + 1];
+        if (!hv_store(hv, key, strlen(key), newSVpv(val, 0), 0))
+           croak("hv_store (conf_dump) failed");
+    }
+    rd_kafka_conf_dump_free(dump, cntp);
+    RETVAL = newRV_noinc((SV *)hv);
+  OUTPUT:
+    RETVAL
+
 ## TODO
 ## void
 ## rd_kafka_topic_conf_set_partitioner_cb(RdKafka::TopicConf topic_conf, int32_t (*partitioner) (const rd_kafka_topic_t *rkt, const void *keydata, size_t keylen, int32_t partition_cnt, void *rkt_opaque, void *msg_opaque))
@@ -1574,7 +1612,6 @@ rd_kafka_topic_name(RdKafka::Topic rkt)
 
 void *
 rd_kafka_topic_opaque(RdKafka::Topic rkt)
-#rd_kafka_topic_opaque(const rd_kafka_topic_t *rkt)
 
 ## "This function must only be called from inside a partitioner function"
 int

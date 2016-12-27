@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use RdKafka qw/:enums/;
 
-use Test::More tests => 15;
+use Test::More tests => 17;
 
 {
     my $conf = RdKafka::Conf->new();
@@ -122,3 +122,9 @@ SKIP: {
     ok($conf->broker_version_fallback, "broker_version_fallback access works");
 }
 
+{
+    my $conf = RdKafka::Conf->new;
+    my $dump = $conf->dump();
+    ok(scalar(keys(%$dump)), "conf dump returns a hash with keys");
+    is($dump->{'client.id'}, 'rdkafka', "client.id eq 'rdkafka'");   # tried to pick one that wouldn't change (?)
+}
