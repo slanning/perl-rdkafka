@@ -914,7 +914,6 @@ rd_kafka_conf_get(RdKafka::Conf conf, const char *name)
     if (res == RD_KAFKA_CONF_OK)
         PUSHs(sv_2mortal(newSVpv(dest, 0)));
 
-## The dump must be freed with `rd_kafka_conf_dump_free()`.
 SV *
 rd_kafka_conf_dump(RdKafka::Conf conf)
   PREINIT:
@@ -938,7 +937,6 @@ rd_kafka_conf_dump(RdKafka::Conf conf)
 ## void
 ## rd_kafka_conf_dump_free(const char **arr, size_t cnt)
 
-## fix fp as with rd_kafka_dump
 void
 rd_kafka_conf_properties_show(RdKafka::Conf conf, SV *fh)
   INIT:
@@ -1569,7 +1567,6 @@ rd_kafka_topic_conf_set(RdKafka::TopicConf conf, const char *name, const char *v
 void
 rd_kafka_topic_conf_set_opaque(RdKafka::TopicConf conf, VOIDBUFFER opaque)
 
-## The dump must be freed with `rd_kafka_conf_dump_free()`.
 ## identical to rd_kafka_conf_dump except for TopicConf in param and rd_kafka_topic_conf_dump call
 SV *
 rd_kafka_topic_conf_dump(RdKafka::TopicConf conf)
@@ -1592,6 +1589,18 @@ rd_kafka_topic_conf_dump(RdKafka::TopicConf conf)
     RETVAL
 
 ## TODO
+## * @brief \b Producer: Set partitioner callback in provided topic conf object.
+## *
+## * The partitioner may be called in any thread at any time,
+## * it may be called multiple times for the same message/key.
+## *
+## * Partitioner function constraints:
+## *   - MUST NOT call any rd_kafka_*() functions except:
+## *       rd_kafka_topic_partition_available()
+## *   - MUST NOT block or execute for prolonged periods of time.
+## *   - MUST return a value between 0 and partition_cnt-1, or the
+## *     special \c RD_KAFKA_PARTITION_UA value if partitioning
+## *     could not be performed.
 ## void
 ## rd_kafka_topic_conf_set_partitioner_cb(RdKafka::TopicConf topic_conf, int32_t (*partitioner) (const rd_kafka_topic_t *rkt, const void *keydata, size_t keylen, int32_t partition_cnt, void *rkt_opaque, void *msg_opaque))
 
@@ -1685,7 +1694,7 @@ MODULE = RdKafka    PACKAGE = RdKafka::GroupList    PREFIX = rd_kafka_group_list
 
 ## releases memory of return value of rd_kafka_list_groups
 void
-rd_kafka_group_list_destroy (RdKafka::GroupList grplist)
+rd_kafka_group_list_destroy(RdKafka::GroupList grplist)
 
 void
 rd_kafka_group_list_DESTROY(RdKafka::GroupList grplist)
